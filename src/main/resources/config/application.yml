@@ -175,11 +175,11 @@ spring:
       client:
         provider:
           oidc:
-            issuer-uri: http://localhost:9080/auth/realms/jhipster
+            issuer-uri: http://localhost:8080/auth/realms/orderfood
         registration:
           oidc:
-            client-id: internal
-            client-secret: internal
+            client-id: orderFoodService
+            client-secret: 4624e35e-7611-49e4-8ab5-46d2becdff24
             scope: openid,profile,email
 
 server:
