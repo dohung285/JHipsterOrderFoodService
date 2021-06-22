@@ -188,7 +188,7 @@ server:
       cookie:
         http-only: true
 
-# Properties to be exposed on the /info management endpoint
+# Properties to be exposed on the /info management endpoint  4624e35e-7611-49e4-8ab5-46d2becdff24
 info:
   # Comma separated list of profiles that will trigger the ribbon to show
   display-ribbon-on-profiles: 'dev'

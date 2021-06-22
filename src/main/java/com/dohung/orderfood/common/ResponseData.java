@@ -1,6 +1,7 @@
 package com.dohung.orderfood.common;
 
 import java.util.List;
+import java.util.Map;
 
 public class ResponseData {
 
@@ -8,6 +9,12 @@ public class ResponseData {
     private String message;
     private List<?> list;
     private Object object;
+    private Map<String, Object> response;
+
+    public ResponseData(Integer status, Map<String, Object> response) {
+        this.status = status;
+        this.response = response;
+    }
 
     public ResponseData(Integer status, String message) {
         this.status = status;
@@ -66,5 +73,13 @@ public class ResponseData {
 
     public void setObject(Object object) {
         this.object = object;
+    }
+
+    public Map<String, Object> getResponse() {
+        return response;
+    }
+
+    public void setResponse(Map<String, Object> response) {
+        this.response = response;
     }
 }

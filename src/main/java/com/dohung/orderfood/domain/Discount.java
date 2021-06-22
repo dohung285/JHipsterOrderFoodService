@@ -2,14 +2,10 @@ package com.dohung.orderfood.domain;
 
 import java.time.LocalDateTime;
 import javax.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@Table(name = "menu")
-public class Menu {
+@Table(name = "discount")
+public class Discount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,20 +14,14 @@ public class Menu {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "role_name")
-    private String roleName;
+    @Column(name = "percent")
+    private Integer percent;
 
-    @Column(name = "icon")
-    private String icon;
+    @Column(name = "start_date")
+    private LocalDateTime startDate;
 
-    @Column(name = "link")
-    private String link;
-
-    @Column(name = "level")
-    private Integer level;
-
-    @Column(name = "parent_id")
-    private Integer parentId;
+    @Column(name = "end_date")
+    private LocalDateTime endDate;
 
     @Column(name = "created_by")
     private String createdBy;
@@ -45,7 +35,7 @@ public class Menu {
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
 
-    public Menu() {}
+    public Discount() {}
 
     public Integer getId() {
         return id;
@@ -63,44 +53,28 @@ public class Menu {
         this.name = name;
     }
 
-    public String getRoleName() {
-        return roleName;
+    public Integer getPercent() {
+        return percent;
     }
 
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
+    public void setPercent(Integer percent) {
+        this.percent = percent;
     }
 
-    public String getIcon() {
-        return icon;
+    public LocalDateTime getStartDate() {
+        return startDate;
     }
 
-    public void setIcon(String icon) {
-        this.icon = icon;
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
     }
 
-    public String getLink() {
-        return link;
+    public LocalDateTime getEndDate() {
+        return endDate;
     }
 
-    public void setLink(String link) {
-        this.link = link;
-    }
-
-    public Integer getLevel() {
-        return level;
-    }
-
-    public void setLevel(Integer level) {
-        this.level = level;
-    }
-
-    public Integer getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Integer parentId) {
-        this.parentId = parentId;
+    public void setEndDate(LocalDateTime endDate) {
+        this.endDate = endDate;
     }
 
     public String getCreatedBy() {
@@ -138,25 +112,18 @@ public class Menu {
     @Override
     public String toString() {
         return (
-            "Menu{" +
+            "Discount{" +
             "id=" +
             id +
             ", name='" +
             name +
             '\'' +
-            ", roleName='" +
-            roleName +
-            '\'' +
-            ", icon='" +
-            icon +
-            '\'' +
-            ", link='" +
-            link +
-            '\'' +
-            ", level=" +
-            level +
-            ", parentId=" +
-            parentId +
+            ", percent=" +
+            percent +
+            ", startDate=" +
+            startDate +
+            ", endDate=" +
+            endDate +
             ", createdBy='" +
             createdBy +
             '\'' +

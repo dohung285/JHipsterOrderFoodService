@@ -2,36 +2,26 @@ package com.dohung.orderfood.domain;
 
 import java.time.LocalDateTime;
 import javax.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@Table(name = "menu")
-public class Menu {
+@Table(name = "comment")
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "food_id")
+    private Integer foodId;
 
-    @Column(name = "role_name")
-    private String roleName;
+    @Column(name = "content")
+    private String content;
 
-    @Column(name = "icon")
-    private String icon;
+    @Column(name = "username")
+    private String username;
 
-    @Column(name = "link")
-    private String link;
-
-    @Column(name = "level")
-    private Integer level;
-
-    @Column(name = "parent_id")
-    private Integer parentId;
+    @Column(name = "rating")
+    private Integer rating;
 
     @Column(name = "created_by")
     private String createdBy;
@@ -45,7 +35,7 @@ public class Menu {
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
 
-    public Menu() {}
+    public Comment() {}
 
     public Integer getId() {
         return id;
@@ -55,52 +45,36 @@ public class Menu {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public Integer getFoodId() {
+        return foodId;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFoodId(Integer foodId) {
+        this.foodId = foodId;
     }
 
-    public String getRoleName() {
-        return roleName;
+    public String getContent() {
+        return content;
     }
 
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
+    public void setContent(String content) {
+        this.content = content;
     }
 
-    public String getIcon() {
-        return icon;
+    public String getUsername() {
+        return username;
     }
 
-    public void setIcon(String icon) {
-        this.icon = icon;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getLink() {
-        return link;
+    public Integer getRating() {
+        return rating;
     }
 
-    public void setLink(String link) {
-        this.link = link;
-    }
-
-    public Integer getLevel() {
-        return level;
-    }
-
-    public void setLevel(Integer level) {
-        this.level = level;
-    }
-
-    public Integer getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Integer parentId) {
-        this.parentId = parentId;
+    public void setRating(Integer rating) {
+        this.rating = rating;
     }
 
     public String getCreatedBy() {
@@ -138,25 +112,19 @@ public class Menu {
     @Override
     public String toString() {
         return (
-            "Menu{" +
+            "Comment{" +
             "id=" +
             id +
-            ", name='" +
-            name +
+            ", foodId=" +
+            foodId +
+            ", content='" +
+            content +
             '\'' +
-            ", roleName='" +
-            roleName +
+            ", username='" +
+            username +
             '\'' +
-            ", icon='" +
-            icon +
-            '\'' +
-            ", link='" +
-            link +
-            '\'' +
-            ", level=" +
-            level +
-            ", parentId=" +
-            parentId +
+            ", rating=" +
+            rating +
             ", createdBy='" +
             createdBy +
             '\'' +
