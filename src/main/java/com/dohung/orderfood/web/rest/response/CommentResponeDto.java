@@ -12,7 +12,37 @@ public class CommentResponeDto {
 
     private Integer rating;
 
+    private String imageName;
+
+    private String path;
+
     public CommentResponeDto() {}
+
+    public CommentResponeDto(Integer id, Integer foodId, String content, String username, Integer rating, String imageName, String path) {
+        this.id = id;
+        this.foodId = foodId;
+        this.content = content;
+        this.username = username;
+        this.rating = rating;
+        this.imageName = imageName;
+        this.path = path;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
 
     public Integer getId() {
         return id;
@@ -70,6 +100,12 @@ public class CommentResponeDto {
             '\'' +
             ", rating=" +
             rating +
+            ", imageName='" +
+            imageName +
+            '\'' +
+            ", path='" +
+            path +
+            '\'' +
             '}'
         );
     }

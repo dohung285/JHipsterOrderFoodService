@@ -1,16 +1,12 @@
 package com.dohung.orderfood.web.rest;
 
-import com.dohung.orderfood.common.MethodCommon;
 import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
 import com.dohung.orderfood.domain.Comment;
-import com.dohung.orderfood.domain.FoodGroup;
 import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.CommentRepository;
 import com.dohung.orderfood.web.rest.request.CommentRequestModel;
-import com.dohung.orderfood.web.rest.request.FoodGroupRequestModel;
 import com.dohung.orderfood.web.rest.response.CommentResponeDto;
-import com.dohung.orderfood.web.rest.response.FoodGroupResponseDto;
 import java.time.LocalDateTime;
 import java.util.*;
 import org.springframework.beans.BeanUtils;
@@ -46,6 +42,13 @@ public class CommentController {
         System.out.println("response: " + response);
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
+    }
+
+    // get 10 latest comments
+    @GetMapping("/tenLastestComment")
+    public ResponseEntity getTenLastestComment() {
+        List<Comment> listReturn = commentRepository.findTop10ByOrderByCreatedDateDesc();
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
     }
 
     //save
