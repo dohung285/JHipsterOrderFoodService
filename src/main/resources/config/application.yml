@@ -178,7 +178,7 @@ spring:
             issuer-uri: http://localhost:8080/auth/realms/orderfood
         registration:
           oidc:
-            client-id: orderFoodService
+            client-id: orderfoodservice
             client-secret: 4624e35e-7611-49e4-8ab5-46d2becdff24
             scope: openid,profile,email
 
