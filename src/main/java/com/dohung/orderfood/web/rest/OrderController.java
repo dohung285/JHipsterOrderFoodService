@@ -2,20 +2,18 @@ package com.dohung.orderfood.web.rest;
 
 import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
-import com.dohung.orderfood.domain.*;
+import com.dohung.orderfood.domain.Order;
+import com.dohung.orderfood.domain.OrderDetail;
+import com.dohung.orderfood.domain.OrderIdentity;
 import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.OrderDetailRepository;
 import com.dohung.orderfood.repository.OrderRepository;
-import com.dohung.orderfood.web.rest.request.FoodRequestModel;
-import com.dohung.orderfood.web.rest.request.ObjectFoodDetail;
-import com.dohung.orderfood.web.rest.request.OrderDetailRequestModel;
 import com.dohung.orderfood.web.rest.request.OrderRequestModel;
-import com.dohung.orderfood.web.rest.response.*;
+import com.dohung.orderfood.web.rest.response.ObjectOrderDetail;
+import com.dohung.orderfood.web.rest.response.OrderDetailResponseDto;
+import com.dohung.orderfood.web.rest.response.OrderResponseDto;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +55,7 @@ public class OrderController {
             Integer orderId = x.getId();
             BeanUtils.copyProperties(x, orderResponseTarget);
 
-            List<OrderDetail> listOD = orderDetails.stream().filter(e -> e.getId().getFoodId() == orderId).collect(Collectors.toList());
+            List<OrderDetail> listOD = orderDetails.stream().filter(e -> e.getId().getOrderId() == orderId).collect(Collectors.toList());
 
             for (OrderDetail od : listOD) {
                 OrderDetailResponseDto orderDetailResponseTarget = new OrderDetailResponseDto();
@@ -108,7 +106,7 @@ public class OrderController {
 
             OrderDetail orderDetailParam = new OrderDetail();
 
-            orderDetailParam.setId(new OrderIdentity(orderId, item.getFoodId()));
+            orderDetailParam.setId(new OrderIdentity(item.getFoodId(), orderId));
             orderDetailParam.setAmount(item.getAmount());
             orderDetailParam.setMoney(item.getMoney());
 
@@ -124,5 +122,41 @@ public class OrderController {
         orderReturn.setOrderDetails(listOrderDetail);
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, orderReturn), HttpStatus.OK);
+    }
+
+    //delete
+    @DeleteMapping("/order/{id}")
+    @Transactional
+    public ResponseEntity delete(@PathVariable("id") Integer id) {
+        Optional<Order> orderOptional = orderRepository.findById(id);
+        if (!orderOptional.isPresent()) {
+            throw new ErrorException("Không tìm thấy Order với id:= " + id);
+        }
+        //xóa parent
+        orderRepository.delete(orderOptional.get());
+        List<OrderDetail> orderDetails = orderDetailRepository.findAllByIdIn(Collections.singletonList(id));
+        if (orderDetails.size() > 0) {
+            List<Integer> foodIds = new ArrayList<>();
+            for (OrderDetail x : orderDetails) {
+                OrderIdentity orderIdentity = new OrderIdentity(x.getId().getFoodId(), x.getId().getOrderId());
+                orderDetailRepository.deleteAllById(orderIdentity);
+            }
+        }
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "sucessful"), HttpStatus.OK);
+    }
+
+    //delete one item in detal with foodId
+    @DeleteMapping("/order/itemDetail/{id}")
+    @Transactional
+    public ResponseEntity deleteOneItemInDetail(@PathVariable("id") Integer id, @RequestParam Integer foodId) {
+        Optional<Order> orderOptional = orderRepository.findById(id);
+        if (!orderOptional.isPresent()) {
+            throw new ErrorException("Không tìm thấy Order với id:= " + id);
+        }
+        OrderIdentity orderIdentity = new OrderIdentity(foodId, id);
+        orderDetailRepository.deleteAllById(orderIdentity);
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "sucessful"), HttpStatus.OK);
     }
 }

@@ -1,34 +1,21 @@
 package com.dohung.orderfood.domain;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "food")
-public class Food {
+@Table(name = "order_status")
+public class OrderStatus {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "order_id")
+    private Integer orderId;
 
-    @Column(name = "price")
-    private BigDecimal price;
-
-    @Column(name = "group_id")
-    private Integer groupId;
-
-    @Column(name = "image_id")
-    private Integer imageId;
-
-    @Column(name = "discount_id")
-    private Integer discountId;
-
-    @Column(name = "description")
-    private String description;
+    @Column(name = "status")
+    private Integer status;
 
     @Column(name = "created_by")
     private String createdBy;
@@ -42,7 +29,7 @@ public class Food {
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
 
-    public Food() {}
+    public OrderStatus() {}
 
     public Integer getId() {
         return id;
@@ -52,52 +39,20 @@ public class Food {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public Integer getOrderId() {
+        return orderId;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setOrderId(Integer orderId) {
+        this.orderId = orderId;
     }
 
-    public BigDecimal getPrice() {
-        return price;
+    public Integer getStatus(Integer status) {
+        return this.status;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public Integer getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(Integer groupId) {
-        this.groupId = groupId;
-    }
-
-    public Integer getImageId() {
-        return imageId;
-    }
-
-    public void setImageId(Integer imageId) {
-        this.imageId = imageId;
-    }
-
-    public Integer getDiscountId() {
-        return discountId;
-    }
-
-    public void setDiscountId(Integer discountId) {
-        this.discountId = discountId;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 
     public String getCreatedBy() {
@@ -135,23 +90,13 @@ public class Food {
     @Override
     public String toString() {
         return (
-            "Food{" +
+            "OrderStatus{" +
             "id=" +
             id +
-            ", name='" +
-            name +
-            '\'' +
-            ", price=" +
-            price +
-            ", groupId=" +
-            groupId +
-            ", imageId=" +
-            imageId +
-            ", discountId=" +
-            discountId +
-            ", description='" +
-            description +
-            '\'' +
+            ", orderId=" +
+            orderId +
+            ", status=" +
+            status +
             ", createdBy='" +
             createdBy +
             '\'' +

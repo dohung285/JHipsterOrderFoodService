@@ -1,13 +1,11 @@
 package com.dohung.orderfood.web.rest.request;
 
-import com.dohung.orderfood.domain.OrderDetail;
 import com.dohung.orderfood.web.rest.response.ObjectOrderDetail;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class OrderRequestModel {
-
-    private Integer id;
 
     private String address;
 
@@ -15,6 +13,7 @@ public class OrderRequestModel {
 
     private String username;
 
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime dateOrder;
 
     private String note;
@@ -29,14 +28,6 @@ public class OrderRequestModel {
 
     public void setOrderDetails(List<ObjectOrderDetail> orderDetails) {
         this.orderDetails = orderDetails;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getAddress() {
@@ -83,9 +74,7 @@ public class OrderRequestModel {
     public String toString() {
         return (
             "OrderRequestModel{" +
-            "id=" +
-            id +
-            ", address='" +
+            "address='" +
             address +
             '\'' +
             ", phone='" +

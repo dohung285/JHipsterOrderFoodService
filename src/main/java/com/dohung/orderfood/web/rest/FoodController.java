@@ -13,8 +13,10 @@ import com.dohung.orderfood.web.rest.request.CreateDiscountFood;
 import com.dohung.orderfood.web.rest.request.FoodRequestModel;
 import com.dohung.orderfood.web.rest.request.ObjectFoodDetail;
 import com.dohung.orderfood.web.rest.response.CommentResponeDto;
+import com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto;
 import com.dohung.orderfood.web.rest.response.FoodDetailResponseDto;
 import com.dohung.orderfood.web.rest.response.FoodResponseDto;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -87,6 +89,29 @@ public class FoodController {
     }
 
     //update discountId to create a discount for food
+    @GetMapping("/food/byFoodGroup")
+    public ResponseEntity getAllFoodByFoodGroup(
+        @RequestParam(name = "foodGroupId") Integer foodGroupId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "5") int size
+    ) {
+        List<FoodByCatalogResponseDto> listReturn = new ArrayList<>();
+        Pageable paging = PageRequest.of(page - 1, size);
+
+        Page<FoodByCatalogResponseDto> pageResult = foodRepository.findAllByGroupId(foodGroupId, paging);
+        listReturn = pageResult.getContent();
+        System.out.println(pageResult.getContent());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("listReturn", listReturn);
+        response.put("currentPage", pageResult.getNumber());
+        response.put("totalItems", pageResult.getTotalElements());
+        response.put("totalPages", pageResult.getTotalPages());
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
+    }
+
+    //update discountId to create a discount for food
     @PutMapping("/food/{id}")
     public ResponseEntity updateDiscountId(@PathVariable("id") Integer id, @RequestBody CreateDiscountFood createDiscountFood) {
         FoodResponseDto foodReturn = new FoodResponseDto();
@@ -126,7 +151,7 @@ public class FoodController {
             foodParam.setPrice(foodRequestModel.getPrice());
             foodParam.setGroupId(foodRequestModel.getGroupId());
             foodParam.setImageId(foodRequestModel.getImageId());
-            foodParam.setDesciption(foodRequestModel.getDesciption());
+            foodParam.setDescription(foodRequestModel.getDesciption());
 
             foodParam.setCreatedBy("api");
             foodParam.setCreatedDate(LocalDateTime.now());

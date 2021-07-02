@@ -4,8 +4,10 @@ import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
 import com.dohung.orderfood.domain.Discount;
 import com.dohung.orderfood.domain.FoodGroup;
+import com.dohung.orderfood.domain.Menu;
 import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.FoodGroupRepository;
+import com.dohung.orderfood.repository.MenuRepository;
 import com.dohung.orderfood.web.rest.request.FoodGroupRequestModel;
 import com.dohung.orderfood.web.rest.response.FoodGroupResponseDto;
 import java.time.LocalDateTime;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,6 +28,9 @@ public class FoodGroupController {
 
     @Autowired
     private FoodGroupRepository foodGroupRepository;
+
+    @Autowired
+    private MenuRepository menuRepository;
 
     // get all
     @GetMapping("/foodGroup")
@@ -46,6 +52,7 @@ public class FoodGroupController {
 
     //save
     @PostMapping("/foodGroup")
+    @Transactional
     public ResponseEntity saveFoodGroup(@RequestBody FoodGroupRequestModel foodGroupRequestModel) {
         FoodGroupResponseDto foodGroupReturn = new FoodGroupResponseDto();
 
@@ -56,9 +63,30 @@ public class FoodGroupController {
             foodGroupParam.setName(foodGroupRequestModel.getName());
             foodGroupParam.setCreatedBy("api");
             foodGroupParam.setCreatedDate(LocalDateTime.now());
+            foodGroupParam.setLastModifiedDate(LocalDateTime.now());
 
             FoodGroup foodGroupRest = foodGroupRepository.save(foodGroupParam);
 
+            //lấy ra id vừa thêm
+            Integer foodId = foodGroupRest.getId();
+
+            Menu menuParam = new Menu();
+            menuParam.setRoleName("admin");
+            menuParam.setName(foodGroupRest.getName());
+            menuParam.setLevel(1);
+            menuParam.setParentId(4); // trong db la 4
+            menuParam.setRoleName(null);
+            menuParam.setLink("/catalog/" + foodId);
+
+            menuParam.setCreatedBy("api");
+            menuParam.setCreatedDate(LocalDateTime.now());
+            menuParam.setLastModifiedDate(LocalDateTime.now());
+
+            try {
+                menuRepository.save(menuParam);
+            } catch (Exception e) {
+                throw new ErrorException("Lỗi: " + e.getMessage());
+            }
             BeanUtils.copyProperties(foodGroupRest, foodGroupReturn);
         } else {
             throw new ErrorException("Đã tồn tại FoodGroup với name: =" + foodGroupRequestModel.getName());
