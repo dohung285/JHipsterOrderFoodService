@@ -17,5 +17,11 @@ public interface FoodDetailRepository extends JpaRepository<FoodDetail, FoodIden
     @Query(value = "DELETE from food_detail where food_id = :ids", nativeQuery = true)
     void deleteAllByFoodId(@Param("ids") Integer ids);
 
+    @Query(
+        value = "select i.path from food_detail fd join image i on fd.image_id = i.id where fd.food_id=:foodId limit 3",
+        nativeQuery = true
+    )
+    List<String> getAllImageByFoodId(@Param("foodId") Integer foodId);
+
     void deleteAllById(FoodIdentity ids);
 }

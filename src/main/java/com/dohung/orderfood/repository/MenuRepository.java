@@ -12,4 +12,7 @@ import org.springframework.stereotype.Repository;
 public interface MenuRepository extends JpaRepository<Menu, Integer> {
     @Query(value = "select * from menu m where  m.role_name in (:roles)", nativeQuery = true)
     List<Menu> getAllMenuByRole(@Param("roles") List<String> roles);
+
+    @Query(value = "select * from menu  ", nativeQuery = true) //m where  m.role_name != 'admin'
+    List<Menu> getAllMenuNotRole();
 }

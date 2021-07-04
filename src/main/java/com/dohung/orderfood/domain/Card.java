@@ -34,14 +34,6 @@ public class Card {
 
     public Card() {}
 
-    public Integer getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Integer amount) {
-        this.amount = amount;
-    }
-
     public Integer getId() {
         return id;
     }
@@ -56,6 +48,14 @@ public class Card {
 
     public void setFoodId(Integer foodId) {
         this.foodId = foodId;
+    }
+
+    public Integer getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Integer amount) {
+        this.amount = amount;
     }
 
     public String getUsername() {

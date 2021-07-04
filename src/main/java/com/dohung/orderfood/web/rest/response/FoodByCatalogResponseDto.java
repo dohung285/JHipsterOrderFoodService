@@ -1,6 +1,7 @@
 package com.dohung.orderfood.web.rest.response;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class FoodByCatalogResponseDto {
 
@@ -11,6 +12,8 @@ public class FoodByCatalogResponseDto {
     private Integer discountId;
     private String path;
 
+    private List<String> listImage;
+
     public FoodByCatalogResponseDto() {}
 
     public FoodByCatalogResponseDto(Integer id, String name, BigDecimal price, String description, Integer discountId, String path) {
@@ -20,6 +23,14 @@ public class FoodByCatalogResponseDto {
         this.description = description;
         this.discountId = discountId;
         this.path = path;
+    }
+
+    public List<String> getListImage() {
+        return listImage;
+    }
+
+    public void setListImage(List<String> listImage) {
+        this.listImage = listImage;
     }
 
     public Integer getId() {
@@ -89,6 +100,8 @@ public class FoodByCatalogResponseDto {
             ", path='" +
             path +
             '\'' +
+            ", listImage=" +
+            listImage +
             '}'
         );
     }

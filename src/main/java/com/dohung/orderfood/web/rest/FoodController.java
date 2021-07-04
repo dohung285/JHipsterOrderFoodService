@@ -88,6 +88,27 @@ public class FoodController {
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
     }
 
+    @GetMapping("/food/foodDetail")
+    public ResponseEntity getAllFoodDetail(@RequestParam(name = "foodId") Integer foodId) {
+        Optional<FoodByCatalogResponseDto> foodOptional = foodRepository.getAllById(foodId);
+        if (!foodOptional.isPresent()) {
+            throw new ErrorException("Không tìm thấy Food với id:= " + foodId);
+        }
+        FoodByCatalogResponseDto foodReturn = foodOptional.get();
+
+        List<String> listImage = foodDetailRepository.getAllImageByFoodId(foodId);
+        if (listImage.size() > 0) {
+            foodReturn.setListImage(listImage);
+        }
+        listImage.add(foodReturn.getPath());
+        foodReturn.setListImage(listImage);
+
+        //        List<FoodByCatalogResponseDto> listReturn =new ArrayList<>();
+        //        listReturn.add(foodReturn);
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, foodReturn), HttpStatus.OK);
+    }
+
     //update discountId to create a discount for food
     @GetMapping("/food/byFoodGroup")
     public ResponseEntity getAllFoodByFoodGroup(

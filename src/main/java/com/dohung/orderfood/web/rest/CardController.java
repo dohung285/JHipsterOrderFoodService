@@ -47,15 +47,37 @@ public class CardController {
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
     }
 
+    // get all
+    @GetMapping("/card/number")
+    public ResponseEntity countNumberFoodInCard(@RequestParam String username) {
+        List<Card> listReturn = cardRepository.findAllByUsername(username);
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("totalItems", listReturn.size());
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
+    }
+
     //save
     @PostMapping("/card")
     public ResponseEntity save(@RequestBody CardRequestModel cardRequestModel) {
         CardResponseDto cardReturn = new CardResponseDto();
 
-        Card cardParam = new Card();
-
+        Card cardParam = null;
+        Optional<Card> optionalCard = cardRepository.findAllByUsernameAndFoodId(
+            cardRequestModel.getUsername(),
+            cardRequestModel.getFoodId()
+        );
+        if (optionalCard.isPresent()) {
+            cardParam = optionalCard.get();
+        } else {
+            cardParam = new Card();
+        }
         cardParam.setFoodId(cardRequestModel.getFoodId());
         cardParam.setUsername(cardRequestModel.getUsername());
+        cardParam.setAmount(cardRequestModel.getAmount());
+
         cardParam.setCreatedBy("api");
         cardParam.setCreatedDate(LocalDateTime.now());
 

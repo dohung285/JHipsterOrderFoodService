@@ -1,6 +1,7 @@
 package com.dohung.orderfood.web.rest;
 
 import com.dohung.orderfood.common.MethodCommon;
+import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
 import com.dohung.orderfood.web.rest.request.UserDetailsRequestModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +13,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import tech.jhipster.config.JHipsterDefaults;
 
 @RestController
 @RequestMapping("/api")
@@ -40,8 +42,8 @@ public class AccountController {
         System.out.println("answer: " + answer);
 
         JSONObject jsonObject = new JSONObject(answer);
-
         return new ResponseEntity(jsonObject.get("body"), HttpStatus.OK);
+        //        return new ResponseEntity(jsonObject.get("body"), HttpStatus.OK);
     }
 
     @PostMapping("/create-account")
@@ -72,8 +74,8 @@ public class AccountController {
         //        "statusCode": "CREATED",
         //            "statusCodeValue": 201 là thành công!
         JSONObject jsonObject = new JSONObject(answer);
-
-        return new ResponseEntity(jsonObject.get("statusCodeValue"), HttpStatus.OK);
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, jsonObject.get("statusCodeValue")), HttpStatus.OK);
+        //        return new ResponseEntity(jsonObject.get("statusCodeValue"), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete-account/{id}")
@@ -97,7 +99,7 @@ public class AccountController {
 
         System.out.println("answer: " + answer);
         JSONObject jsonObject = new JSONObject(answer);
-
-        return new ResponseEntity(jsonObject.get("statusCodeValue"), HttpStatus.OK);
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, jsonObject.get("statusCodeValue")), HttpStatus.OK);
+        //        return new ResponseEntity(jsonObject.get("statusCodeValue"), HttpStatus.OK);
     }
 }
