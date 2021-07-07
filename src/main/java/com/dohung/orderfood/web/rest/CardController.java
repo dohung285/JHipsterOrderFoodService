@@ -6,7 +6,9 @@ import com.dohung.orderfood.domain.Card;
 import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.CardRepository;
 import com.dohung.orderfood.web.rest.request.CardRequestModel;
+import com.dohung.orderfood.web.rest.request.CardUpdateAmountRequestModel;
 import com.dohung.orderfood.web.rest.response.CardResponseDto;
+import com.dohung.orderfood.web.rest.response.FoodCardResponseDto;
 import java.time.LocalDateTime;
 import java.util.*;
 import org.springframework.beans.BeanUtils;
@@ -28,21 +30,22 @@ public class CardController {
     // get all
     @GetMapping("/card")
     public ResponseEntity getAll(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "5") int size,
+        //        @RequestParam(defaultValue = "0") int page,
+        //        @RequestParam(defaultValue = "50") int size,
         @RequestParam String username
     ) {
-        List<Card> listReturn = new ArrayList<>();
+        List<FoodCardResponseDto> listReturn = new ArrayList<>();
 
-        Pageable paging = PageRequest.of(page - 1, size);
-        Page<Card> cardPage = cardRepository.findAllByUsername(paging, username);
-        listReturn = cardPage.getContent();
+        //        Pageable paging = PageRequest.of(page - 1, size);
+        //        Page<FoodCardResponseDto> cardPage = cardRepository.findAllByUsername(paging, username);
+        //        listReturn = cardPage.getContent();
+        listReturn = cardRepository.findAllByUsernameQuery(username);
 
         Map<String, Object> response = new HashMap<>();
         response.put("listReturn", listReturn);
-        response.put("currentPage", cardPage.getNumber());
-        response.put("totalItems", cardPage.getTotalElements());
-        response.put("totalPages", cardPage.getTotalPages());
+        //        response.put("currentPage", cardPage.getNumber());
+        //        response.put("totalItems", cardPage.getTotalElements());
+        //        response.put("totalPages", cardPage.getTotalPages());
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
     }
@@ -87,6 +90,27 @@ public class CardController {
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, cardReturn), HttpStatus.OK);
     }
 
+    @PutMapping("/card")
+    public ResponseEntity save(@RequestParam Integer cardId, @RequestBody CardUpdateAmountRequestModel cardUpdateAmountRequestModel) {
+        CardResponseDto cardReturn = new CardResponseDto();
+
+        Card cardParam = null;
+        Optional<Card> optionalCard = cardRepository.findAllById(cardId);
+        if (!optionalCard.isPresent()) {
+            throw new ErrorException("Không tìm thấy card với id:= " + cardId);
+        }
+
+        cardParam = optionalCard.get();
+
+        cardParam.setAmount(cardUpdateAmountRequestModel.getAmount());
+        cardParam.setLastModifiedDate(LocalDateTime.now());
+
+        Card cardRest = cardRepository.save(cardParam);
+
+        BeanUtils.copyProperties(cardRest, cardReturn);
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, cardReturn), HttpStatus.OK);
+    }
+
     //delete
     @DeleteMapping("/card/{cardId}")
     public ResponseEntity delete(@PathVariable("cardId") Integer cardId) {
@@ -95,6 +119,18 @@ public class CardController {
             throw new ErrorException("Không tìm thấy Card với cardId:= " + cardId);
         }
         cardRepository.delete(optionalCard.get());
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "sucessful"), HttpStatus.OK);
+    }
+
+    //delete all
+    @DeleteMapping("/card/all")
+    public ResponseEntity deleteAll(@RequestParam("cardIds") List<Integer> cardIds) {
+        List<Card> list = cardRepository.findAllByIdIn(cardIds);
+        if (list.size() > 0) {
+            for (Card x : list) {
+                cardRepository.delete(x);
+            }
+        }
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "sucessful"), HttpStatus.OK);
     }
 }
