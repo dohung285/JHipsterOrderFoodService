@@ -9,28 +9,20 @@ public class FoodByCatalogResponseDto {
     private String name;
     private BigDecimal price;
     private String description;
-    private Integer discountId;
+    private Integer percent;
     private String path;
 
     private List<String> listImage;
 
     public FoodByCatalogResponseDto() {}
 
-    public FoodByCatalogResponseDto(Integer id, String name, BigDecimal price, String description, Integer discountId, String path) {
+    public FoodByCatalogResponseDto(Integer id, String name, BigDecimal price, String description, Integer percent, String path) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.description = description;
-        this.discountId = discountId;
+        this.percent = percent;
         this.path = path;
-    }
-
-    public List<String> getListImage() {
-        return listImage;
-    }
-
-    public void setListImage(List<String> listImage) {
-        this.listImage = listImage;
     }
 
     public Integer getId() {
@@ -65,12 +57,12 @@ public class FoodByCatalogResponseDto {
         this.description = description;
     }
 
-    public Integer getDiscountId() {
-        return discountId;
+    public Integer getPercent() {
+        return percent;
     }
 
-    public void setDiscountId(Integer discountId) {
-        this.discountId = discountId;
+    public void setPercent(Integer percent) {
+        this.percent = percent;
     }
 
     public String getPath() {
@@ -79,6 +71,14 @@ public class FoodByCatalogResponseDto {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public List<String> getListImage() {
+        return listImage;
+    }
+
+    public void setListImage(List<String> listImage) {
+        this.listImage = listImage;
     }
 
     @Override
@@ -95,8 +95,8 @@ public class FoodByCatalogResponseDto {
             ", description='" +
             description +
             '\'' +
-            ", discountId=" +
-            discountId +
+            ", percent=" +
+            percent +
             ", path='" +
             path +
             '\'' +

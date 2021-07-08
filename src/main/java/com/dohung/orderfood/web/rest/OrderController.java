@@ -77,7 +77,7 @@ public class OrderController {
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
     }
 
-    //save
+    //save - đặt hàng thông qua giỏ hàng
     @PostMapping("/order")
     @Transactional
     public ResponseEntity save(@RequestBody OrderRequestModel orderRequestModel) {
@@ -123,6 +123,53 @@ public class OrderController {
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, orderReturn), HttpStatus.OK);
     }
+
+    //    //save - đặt hàng không qua giỏ hàng
+    //    @PostMapping("/orderDirect")
+    //    @Transactional
+    //    public ResponseEntity saveDirect(@RequestBody OrderRequestModel orderRequestModel) {
+    //        OrderResponseDto orderReturn = new OrderResponseDto();
+    //
+    //        Order orderParam = new Order();
+    //
+    //        orderParam.setAddress(orderRequestModel.getAddress());
+    //        orderParam.setPhone(orderRequestModel.getPhone());
+    //        orderParam.setUsername(orderRequestModel.getUsername());
+    //        orderParam.setDateOrder(orderRequestModel.getDateOrder());
+    //
+    //        orderParam.setCreatedBy("api");
+    //        orderParam.setCreatedDate(LocalDateTime.now());
+    //        orderParam.setLastModifiedDate(LocalDateTime.now());
+    //
+    //        Order orderRest = orderRepository.save(orderParam);
+    //        BeanUtils.copyProperties(orderRest, orderReturn);
+    //
+    //        Integer orderId = orderRest.getId();
+    //
+    //        List<ObjectOrderDetail> list = orderRequestModel.getOrderDetails();
+    //        List<OrderDetailResponseDto> listOrderDetail = new ArrayList<>();
+    //        for (ObjectOrderDetail item : list) {
+    //            OrderDetailResponseDto orderDetailReturn = new OrderDetailResponseDto();
+    //
+    //            OrderDetail orderDetailParam = new OrderDetail();
+    //
+    //            orderDetailParam.setId(new OrderIdentity(item.getFoodId(), orderId));
+    //            orderDetailParam.setAmount(item.getAmount());
+    //            orderDetailParam.setMoney(item.getMoney());
+    //
+    //            orderDetailParam.setCreatedBy("api");
+    //            orderDetailParam.setCreatedDate(LocalDateTime.now());
+    //            orderDetailParam.setLastModifiedDate(LocalDateTime.now());
+    //
+    //            OrderDetail orderDetailRest = orderDetailRepository.save(orderDetailParam);
+    //            BeanUtils.copyProperties(orderDetailRest, orderDetailReturn);
+    //
+    //            listOrderDetail.add(orderDetailReturn);
+    //        }
+    //        orderReturn.setOrderDetails(listOrderDetail);
+    //
+    //        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, orderReturn), HttpStatus.OK);
+    //    }
 
     //delete
     @DeleteMapping("/order/{id}")

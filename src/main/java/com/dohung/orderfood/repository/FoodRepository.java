@@ -18,7 +18,7 @@ public interface FoodRepository extends JpaRepository<Food, Integer> {
     Optional<Food> findAllById(Integer id);
 
     @Query(
-        value = "select new com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto( f.id, f.name , f.price,f.description,f.discountId, i.path ) from Food f join Image i  on f.imageId = i.id where f.id =:foodId "
+        value = "select new com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto( f.id, f.name , f.price,f.description,d.percent, i.path ) from Food f left join Discount d on d.id=f.discountId left join Image i  on f.imageId = i.id where f.id =:foodId "
     )
     Optional<FoodByCatalogResponseDto> getAllById(@Param("foodId") Integer foodId);
 
