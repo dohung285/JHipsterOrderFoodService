@@ -28,20 +28,22 @@ public class DiscountController {
 
     // get all
     @GetMapping("/discounts")
-    public ResponseEntity getAllDiscounts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
-        List<Discount> listReturn = new ArrayList<>();
+    public ResponseEntity getAllDiscounts(
+        //        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size
+    ) {
+        List<Discount> listReturn = discountRepository.findAll();
 
-        Pageable paging = PageRequest.of(page - 1, size);
-        Page<Discount> discountPage = discountRepository.findAll(paging);
-        listReturn = discountPage.getContent();
+        //        Pageable paging = PageRequest.of(page - 1, size);
+        //        Page<Discount> discountPage = discountRepository.findAll(paging);
+        //        listReturn = discountPage.getContent();
+        //
+        //        Map<String, Object> response = new HashMap<>();
+        //        response.put("listReturn", listReturn);
+        //        response.put("currentPage", discountPage.getNumber());
+        //        response.put("totalItems", discountPage.getTotalElements());
+        //        response.put("totalPages", discountPage.getTotalPages());
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("listReturn", listReturn);
-        response.put("currentPage", discountPage.getNumber());
-        response.put("totalItems", discountPage.getTotalElements());
-        response.put("totalPages", discountPage.getTotalPages());
-
-        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
     }
 
     //save

@@ -34,20 +34,22 @@ public class FoodGroupController {
 
     // get all
     @GetMapping("/foodGroup")
-    public ResponseEntity getAllFoodGroup(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
-        List<FoodGroup> listReturn = new ArrayList<>();
+    public ResponseEntity getAllFoodGroup(
+        //        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size
+    ) {
+        List<FoodGroup> listReturn = foodGroupRepository.findAll();
 
-        Pageable paging = PageRequest.of(page - 1, size);
-        Page<FoodGroup> foodGroupPage = foodGroupRepository.findAll(paging);
-        listReturn = foodGroupPage.getContent();
+        //        Pageable paging = PageRequest.of(page - 1, size);
+        //        Page<FoodGroup> foodGroupPage = foodGroupRepository.findAll(paging);
+        //        listReturn = foodGroupPage.getContent();
+        //
+        //        Map<String, Object> response = new HashMap<>();
+        //        response.put("listReturn", listReturn);
+        //        response.put("currentPage", foodGroupPage.getNumber());
+        //        response.put("totalItems", foodGroupPage.getTotalElements());
+        //        response.put("totalPages", foodGroupPage.getTotalPages());
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("listReturn", listReturn);
-        response.put("currentPage", foodGroupPage.getNumber());
-        response.put("totalItems", foodGroupPage.getTotalElements());
-        response.put("totalPages", foodGroupPage.getTotalPages());
-
-        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
     }
 
     //save
@@ -96,11 +98,14 @@ public class FoodGroupController {
 
     //delete
     @DeleteMapping("/foodGroup/{foodGroupId}")
+    @Transactional
     public ResponseEntity deleteFoodGroup(@PathVariable("foodGroupId") Integer foodGroupId) {
         Optional<FoodGroup> optionalFoodGroup = foodGroupRepository.findById(foodGroupId);
         if (!optionalFoodGroup.isPresent()) {
             throw new ErrorException("Không tìm thấy FoodGroup với foodGroupId:= " + foodGroupId);
         }
+        String foodGroupName = optionalFoodGroup.get().getName();
+
         foodGroupRepository.delete(optionalFoodGroup.get());
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "sucessful"), HttpStatus.OK);
     }
