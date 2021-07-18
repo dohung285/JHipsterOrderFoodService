@@ -1,6 +1,7 @@
 package com.dohung.orderfood.repository;
 
 import com.dohung.orderfood.domain.Comment;
+import com.dohung.orderfood.web.rest.response.CommentObjectResponseDto;
 import com.dohung.orderfood.web.rest.response.CommentResponeDto;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -17,4 +18,9 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
     List<Comment> findTop10ByOrderByCreatedDateDesc();
 
     List<Comment> findAllByFoodId(Integer foodId);
+
+    @Query(
+        "select new com.dohung.orderfood.web.rest.response.CommentObjectResponseDto( c.id,f.name,c.content,c.username,c.rating) from Comment c join Food f on c.foodId = f.id "
+    )
+    List<CommentObjectResponseDto> getAll();
 }

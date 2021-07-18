@@ -2,16 +2,16 @@ package com.dohung.orderfood.web.rest;
 
 import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
-import com.dohung.orderfood.domain.Order;
-import com.dohung.orderfood.domain.OrderDetail;
-import com.dohung.orderfood.domain.OrderIdentity;
+import com.dohung.orderfood.domain.*;
 import com.dohung.orderfood.exception.ErrorException;
+import com.dohung.orderfood.repository.BillRepository;
 import com.dohung.orderfood.repository.OrderDetailRepository;
 import com.dohung.orderfood.repository.OrderRepository;
+import com.dohung.orderfood.repository.OrderStatusRepository;
 import com.dohung.orderfood.web.rest.request.OrderRequestModel;
-import com.dohung.orderfood.web.rest.response.ObjectOrderDetail;
-import com.dohung.orderfood.web.rest.response.OrderDetailResponseDto;
-import com.dohung.orderfood.web.rest.response.OrderResponseDto;
+import com.dohung.orderfood.web.rest.response.*;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,6 +34,12 @@ public class OrderController {
 
     @Autowired
     private OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    private OrderStatusRepository orderStatusRepository;
+
+    @Autowired
+    private BillRepository billRepository;
 
     // get all
     @GetMapping("/order")
@@ -77,10 +83,42 @@ public class OrderController {
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
     }
 
+    // get all
+    @GetMapping("/order/{username}")
+    public ResponseEntity getAllByUsername(@PathVariable("username") String username) {
+        List<OrderOfUserResponseDto> listReturn = orderRepository.getAllOrderByUsername(username);
+        System.out.println(listReturn);
+
+        List<ObjectOrderDetailOfUserResponseDto> listOrderDetail = orderDetailRepository.getAllOrderDetailByUsername(username);
+        //        System.out.println(listOrderDetail);
+
+        for (OrderOfUserResponseDto x : listReturn) {
+            Integer orderId = x.getOrderId();
+            System.out.println("orderId: " + orderId);
+            List<ObjectOrderDetailOfUserResponseDto> listChild = listOrderDetail
+                .stream()
+                .filter(item -> item.getOrderId() == orderId)
+                .collect(Collectors.toList());
+            System.out.println("listChild: " + listChild);
+            if (listChild.size() > 0) {
+                x.setListObjectOrderDetailOfUserResponseDto(listChild);
+            }
+        }
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
+    }
+
     //save - đặt hàng thông qua giỏ hàng
     @PostMapping("/order")
     @Transactional
     public ResponseEntity save(@RequestBody OrderRequestModel orderRequestModel) {
+        //        System.out.println(orderRequestModel.getDateOrder());
+        //        SimpleDateFormat sdf1 = new SimpleDateFormat();
+        //        sdf1.applyPattern("dd/MM/yyyy HH:mm:ss.SS");
+        //        Date date = sdf1.parse(orderRequestModel.getDateOrder()+"");
+        //        String string=sdf1.format(date);
+        //        System.out.println("Current date in Date Format: " + string);
+
         OrderResponseDto orderReturn = new OrderResponseDto();
 
         Order orderParam = new Order();
@@ -89,6 +127,7 @@ public class OrderController {
         orderParam.setPhone(orderRequestModel.getPhone());
         orderParam.setUsername(orderRequestModel.getUsername());
         orderParam.setDateOrder(orderRequestModel.getDateOrder());
+        orderParam.setNote(orderRequestModel.getNote());
 
         orderParam.setCreatedBy("api");
         orderParam.setCreatedDate(LocalDateTime.now());
@@ -98,6 +137,22 @@ public class OrderController {
         BeanUtils.copyProperties(orderRest, orderReturn);
 
         Integer orderId = orderRest.getId();
+        // thêm vào bảng order_status
+
+        OrderStatus orderStatusParam = new OrderStatus();
+
+        orderStatusParam.setOrderId(orderId);
+        orderStatusParam.setStatus(0); // Tiếp nhận đơn hàng
+
+        orderStatusParam.setCreatedBy("api");
+        orderStatusParam.setCreatedDate(LocalDateTime.now());
+        orderStatusParam.setLastModifiedDate(LocalDateTime.now());
+
+        try {
+            OrderStatus orderStatusRest = orderStatusRepository.save(orderStatusParam);
+        } catch (Exception e) {
+            throw new ErrorException("Có lỗi xảy ra lưu orderStatus");
+        }
 
         List<ObjectOrderDetail> list = orderRequestModel.getOrderDetails();
         List<OrderDetailResponseDto> listOrderDetail = new ArrayList<>();
@@ -119,9 +174,36 @@ public class OrderController {
 
             listOrderDetail.add(orderDetailReturn);
         }
+
+        BigDecimal totalMoney = caculatorTotalMoney(listOrderDetail);
+        Bill billParam = new Bill();
+
+        billParam.setOrderId(orderId);
+        billParam.setTotalMoney(totalMoney);
+        billParam.setUsername(orderRequestModel.getUsername());
+
+        billParam.setCreatedBy("api");
+        billParam.setCreatedDate(LocalDateTime.now());
+        billParam.setLastModifiedDate(LocalDateTime.now());
+
+        try {
+            billRepository.save(billParam);
+        } catch (Exception e) {
+            throw new ErrorException(" Lỗi: " + e.getMessage());
+        }
+
         orderReturn.setOrderDetails(listOrderDetail);
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, orderReturn), HttpStatus.OK);
+    }
+
+    private BigDecimal caculatorTotalMoney(List<OrderDetailResponseDto> listOrderDetail) {
+        BigDecimal sum = new BigDecimal("0.0");
+        for (OrderDetailResponseDto x : listOrderDetail) {
+            sum = sum.add(x.getMoney());
+        }
+
+        return sum;
     }
 
     //    //save - đặt hàng không qua giỏ hàng

@@ -8,6 +8,7 @@ import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.OrderRepository;
 import com.dohung.orderfood.repository.OrderStatusRepository;
 import com.dohung.orderfood.web.rest.request.OderStatusRequestModel;
+import com.dohung.orderfood.web.rest.response.ObjectOrderStatusResponseDto;
 import com.dohung.orderfood.web.rest.response.OrderStatusResponseDto;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -33,20 +34,22 @@ public class OrderStatusController {
 
     // get all
     @GetMapping("/orderStatus")
-    public ResponseEntity getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
-        List<OrderStatusResponseDto> listReturn = new ArrayList<>();
+    public ResponseEntity getAll(
+        //        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size
+    ) {
+        List<ObjectOrderStatusResponseDto> listReturn = orderStatusRepository.getAll();
 
-        Pageable paging = PageRequest.of(page - 1, size);
-        Page<OrderStatus> orderPage = orderStatusRepository.findAll(paging);
-        List<OrderStatus> listResult = orderPage.getContent();
+        //        Pageable paging = PageRequest.of(page - 1, size);
+        //        Page<OrderStatus> orderPage = orderStatusRepository.findAll(paging);
+        //        List<OrderStatus> listResult = orderPage.getContent();
+        //
+        //        Map<String, Object> response = new HashMap<>();
+        //        response.put("listReturn", listReturn);
+        //        response.put("currentPage", orderPage.getNumber());
+        //        response.put("totalItems", orderPage.getTotalElements());
+        //        response.put("totalPages", orderPage.getTotalPages());
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("listReturn", listReturn);
-        response.put("currentPage", orderPage.getNumber());
-        response.put("totalItems", orderPage.getTotalElements());
-        response.put("totalPages", orderPage.getTotalPages());
-
-        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
     }
 
     //save
@@ -98,7 +101,7 @@ public class OrderStatusController {
 
         OrderStatus orderStatusParam = optionalOrderStatus.get();
 
-        orderStatusParam.setOrderId(orderStatusRequestModel.getOrderId());
+        //        orderStatusParam.setOrderId(orderStatusRequestModel.getOrderId());
         orderStatusParam.setStatus(orderStatusRequestModel.getStatus());
 
         orderStatusParam.setCreatedBy("api");

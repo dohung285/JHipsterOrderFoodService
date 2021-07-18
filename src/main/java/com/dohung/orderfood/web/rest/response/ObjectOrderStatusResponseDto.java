@@ -1,11 +1,10 @@
-package com.dohung.orderfood.web.rest.request;
+package com.dohung.orderfood.web.rest.response;
 
-import com.dohung.orderfood.web.rest.response.ObjectOrderDetail;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
-import java.util.List;
 
-public class OrderRequestModel {
+public class ObjectOrderStatusResponseDto {
+
+    private Integer id;
 
     private String address;
 
@@ -13,21 +12,38 @@ public class OrderRequestModel {
 
     private String username;
 
-    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private LocalDateTime dateOrder;
 
     private String note;
 
-    List<ObjectOrderDetail> orderDetails;
+    private Integer status;
 
-    public OrderRequestModel() {}
+    public ObjectOrderStatusResponseDto() {}
 
-    public List<ObjectOrderDetail> getOrderDetails() {
-        return orderDetails;
+    public ObjectOrderStatusResponseDto(
+        Integer id,
+        String address,
+        String phone,
+        String username,
+        LocalDateTime dateOrder,
+        String note,
+        Integer status
+    ) {
+        this.id = id;
+        this.address = address;
+        this.phone = phone;
+        this.username = username;
+        this.dateOrder = dateOrder;
+        this.note = note;
+        this.status = status;
     }
 
-    public void setOrderDetails(List<ObjectOrderDetail> orderDetails) {
-        this.orderDetails = orderDetails;
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getAddress() {
@@ -70,11 +86,21 @@ public class OrderRequestModel {
         this.note = note;
     }
 
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return (
-            "OrderRequestModel{" +
-            "address='" +
+            "ObjectOrderStatusResponseDto{" +
+            "id=" +
+            id +
+            ", address='" +
             address +
             '\'' +
             ", phone='" +
@@ -88,8 +114,8 @@ public class OrderRequestModel {
             ", note='" +
             note +
             '\'' +
-            ", orderDetails=" +
-            orderDetails +
+            ", status=" +
+            status +
             '}'
         );
     }

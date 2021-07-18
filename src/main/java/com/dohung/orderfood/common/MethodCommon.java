@@ -9,6 +9,8 @@ import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -37,5 +39,27 @@ public class MethodCommon {
         System.out.println("access_token: " + accessToken);
 
         return accessToken;
+    }
+
+    public static String verifyCurrentPassword(String clientId, String username, String password, String clientSecret, String accessToken) {
+        //        String accessToken = MethodCommon.getAccessToken();
+
+        MultiValueMap<String, Object> postParameters = new LinkedMultiValueMap<>();
+        String url = "http://localhost:8080/auth/realms/orderfood/protocol/openid-connect/token";
+        postParameters.add("client_id", clientId);
+        postParameters.add("grant_type", "password");
+        postParameters.add("username", username);
+        postParameters.add("password", password);
+        postParameters.add("client_secret", clientSecret);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/x-www-form-urlencoded");
+        headers.add("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<MultiValueMap<String, Object>> r = new HttpEntity<>(postParameters, headers);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> responseMessage = restTemplate.exchange(url, HttpMethod.POST, r, String.class);
+
+        return String.valueOf(responseMessage.getStatusCodeValue());
     }
 }
