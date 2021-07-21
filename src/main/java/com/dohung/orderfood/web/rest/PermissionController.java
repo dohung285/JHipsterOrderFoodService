@@ -57,6 +57,24 @@ public class PermissionController {
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "Có quyền truy cập"), HttpStatus.OK);
     }
 
+    @GetMapping("/permission/check-root")
+    public ResponseEntity checkAccountIsRoot(@RequestParam String username) {
+        Optional<UserPermission> optionalUserPermission = userPermissionRepository.checkUsernameIsRoot(username);
+        if (!optionalUserPermission.isPresent()) {
+            throw new ErrorException(" Không phải root");
+        }
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "Là root"), HttpStatus.OK);
+    }
+
+    @GetMapping("/permission/add-check")
+    public ResponseEntity checkAddPermission(@RequestParam String username) {
+        Optional<UserPermission> optionalUserPermission = userPermissionRepository.checkAddPermission(username);
+        if (!optionalUserPermission.isPresent()) {
+            throw new ErrorException(" Không có quyền truy cập");
+        }
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "Có quyền truy cập"), HttpStatus.OK);
+    }
+
     // get all
     @GetMapping("/permission")
     public ResponseEntity getAll() {
@@ -126,23 +144,17 @@ public class PermissionController {
             Map<String, Object> map = createPermissionRequestModel.getCurrentPermission();
             String jsonObjectMapper = objectMapper.writeValueAsString(map);
 
-            //            JSONObject jsonObject = new JSONObject();
-            //            for (Map.Entry<String, Object> entry : map.entrySet()) {
-            //                System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
-            //                jsonObject.put(entry.getKey(), entry.getValue());
-            //            }
-
             System.out.println("jsonObjectMapper: " + jsonObjectMapper);
 
             PermissionCurrent permissionCurrentParam = null;
             Optional<PermissionCurrent> optionalPermissionCurrent = permissionCurrentRepository.findAllByUsername(username);
-            if (optionalPermissionCurrent.isPresent()) {
+            if (optionalPermissionCurrent.isPresent()) { //TH đã có quyền  rồi thì là EDIT
                 permissionCurrentParam = optionalPermissionCurrent.get();
 
                 permissionCurrentParam.setUsername(username);
                 permissionCurrentParam.setCurrentPer(jsonObjectMapper);
                 permissionCurrentParam.setLastModifiedDate(LocalDateTime.now());
-            } else {
+            } else { //TH đã có quyền  rồi thì là ADD
                 permissionCurrentParam = new PermissionCurrent();
 
                 permissionCurrentParam.setUsername(username);

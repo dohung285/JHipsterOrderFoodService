@@ -18,6 +18,9 @@ public class UserPermission {
     @Column(name = "username")
     private String username;
 
+    @Column(name = "account_type")
+    private Integer accountType;
+
     @Column(name = "created_by")
     private String createdBy;
 
@@ -31,6 +34,14 @@ public class UserPermission {
     private LocalDateTime lastModifiedDate;
 
     public UserPermission() {}
+
+    public Integer getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(Integer accountType) {
+        this.accountType = accountType;
+    }
 
     public Integer getId() {
         return id;
@@ -100,6 +111,8 @@ public class UserPermission {
             ", username='" +
             username +
             '\'' +
+            ", accountType=" +
+            accountType +
             ", createdBy='" +
             createdBy +
             '\'' +
