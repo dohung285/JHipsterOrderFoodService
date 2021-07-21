@@ -13,7 +13,7 @@ public class UserPermission {
     private Integer id;
 
     @Column(name = "action_id")
-    private UUID actionId;
+    private String actionId;
 
     @Column(name = "username")
     private String username;
@@ -40,11 +40,11 @@ public class UserPermission {
         this.id = id;
     }
 
-    public UUID getActionId() {
+    public String getActionId() {
         return actionId;
     }
 
-    public void setActionId(UUID actionId) {
+    public void setActionId(String actionId) {
         this.actionId = actionId;
     }
 

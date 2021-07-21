@@ -9,7 +9,7 @@ import javax.persistence.*;
 public class ActionSystem {
 
     @Id
-    private UUID id;
+    private String id;
 
     @Column(name = "funct_id")
     private Integer functId;
@@ -31,11 +31,11 @@ public class ActionSystem {
 
     public ActionSystem() {}
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
