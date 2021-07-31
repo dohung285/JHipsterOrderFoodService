@@ -188,7 +188,7 @@ public class RoleController {
             throw new ErrorException(e.getMessage());
         }
 
-        System.out.println("answer: " + answer);
+        System.out.println("answer: " + answer.toString());
 
         //        "statusCode": "CREATED",
         //            "statusCodeValue": 201 là thành công!

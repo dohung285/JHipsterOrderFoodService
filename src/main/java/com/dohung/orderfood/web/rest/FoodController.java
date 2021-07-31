@@ -2,35 +2,43 @@ package com.dohung.orderfood.web.rest;
 
 import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
-import com.dohung.orderfood.domain.*;
+import com.dohung.orderfood.domain.Discount;
+import com.dohung.orderfood.domain.Food;
+import com.dohung.orderfood.domain.FoodDetail;
+import com.dohung.orderfood.domain.FoodIdentity;
 import com.dohung.orderfood.exception.ErrorException;
-import com.dohung.orderfood.repository.CommentRepository;
 import com.dohung.orderfood.repository.DiscountRepository;
 import com.dohung.orderfood.repository.FoodDetailRepository;
 import com.dohung.orderfood.repository.FoodRepository;
-import com.dohung.orderfood.web.rest.request.CommentRequestModel;
 import com.dohung.orderfood.web.rest.request.CreateDiscountFood;
 import com.dohung.orderfood.web.rest.request.FoodRequestModel;
 import com.dohung.orderfood.web.rest.request.ObjectFoodDetail;
-import com.dohung.orderfood.web.rest.response.CommentResponeDto;
 import com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto;
 import com.dohung.orderfood.web.rest.response.FoodDetailResponseDto;
 import com.dohung.orderfood.web.rest.response.FoodResponseDto;
+import io.swagger.models.auth.In;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.swing.text.html.Option;
-import net.bytebuddy.asm.Advice;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
@@ -158,10 +166,115 @@ public class FoodController {
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, foodReturn), HttpStatus.OK);
     }
 
+    public static File convert(MultipartFile file) {
+        File convFile = new File("temp_image", file.getOriginalFilename());
+        if (!convFile.getParentFile().exists()) {
+            System.out.println("mkdir:" + convFile.getParentFile().mkdirs());
+        }
+        try {
+            convFile.createNewFile();
+            FileOutputStream fos = new FileOutputStream(convFile);
+            fos.write(file.getBytes());
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return convFile;
+    }
+
     //save
     @PostMapping("/food")
     @Transactional
-    public ResponseEntity save(@RequestBody FoodRequestModel foodRequestModel) {
+    public ResponseEntity save(
+        //        @RequestParam("files") MultipartFile files,
+        @RequestParam("files") MultipartFile[] files,
+        @RequestParam("name") String name,
+        @RequestParam("price") BigDecimal price,
+        @RequestParam("groupId") Integer groupId,
+        @RequestParam("desciption") String desciption
+    ) {
+        List<MultipartFile> list = Arrays.asList(files);
+        System.out.println("list" + list.size());
+
+        String url = "http://localhost:8083/uploadMultipleFiles";
+        MultiValueMap<String, Object> bodyMap = new LinkedMultiValueMap<>();
+        for (MultipartFile x : list) {
+            bodyMap.add("files", new FileSystemResource(convert(x)));
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(bodyMap, headers);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = null;
+        try {
+            response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+        } catch (Exception e) {
+            throw new ErrorException("Lỗi " + e.getMessage());
+        }
+
+        System.out.println("Response code: " + response.getStatusCode());
+        System.out.println("Response body: " + response.getBody());
+
+        List<Integer> listInteger = new ArrayList<>();
+        JSONArray jsonArray = new JSONArray(response.getBody());
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+            //            JSONObject jsonBody = jsonObject.getJSONObject("body");
+            System.out.println("jsonObject: " + jsonObject);
+
+            System.out.println("id: " + jsonObject.getInt("id"));
+            listInteger.add(jsonObject.getInt("id"));
+        }
+
+        FoodResponseDto foodReturn = new FoodResponseDto();
+
+        List<Food> checkExist = foodRepository.findAllByNameAndGroupId(name, groupId);
+        if (checkExist.size() <= 0) {
+            Food foodParam = new Food();
+
+            foodParam.setName(name);
+            foodParam.setPrice(price);
+            foodParam.setGroupId(groupId);
+            foodParam.setImageId(listInteger.get(0));
+            foodParam.setDescription(desciption);
+
+            foodParam.setCreatedBy("api");
+            foodParam.setCreatedDate(LocalDateTime.now());
+            foodParam.setLastModifiedDate(LocalDateTime.now());
+
+            Food foodRest = foodRepository.save(foodParam);
+            BeanUtils.copyProperties(foodRest, foodReturn);
+
+            Integer foodId = foodRest.getId();
+            List<FoodDetailResponseDto> listFoodDetail = new ArrayList<>();
+            if (listInteger.size() > 1) {
+                for (int i = 1; i < listInteger.size(); i++) {
+                    FoodDetailResponseDto foodDetailReturn = new FoodDetailResponseDto();
+                    FoodDetail foodDetailParam = new FoodDetail();
+                    foodDetailParam.setId(new FoodIdentity(foodId, listInteger.get(i)));
+
+                    foodDetailParam.setCreatedBy("api");
+                    foodDetailParam.setCreatedDate(LocalDateTime.now());
+                    foodDetailParam.setLastModifiedDate(LocalDateTime.now());
+
+                    FoodDetail foodDetailRest = foodDetailRepository.save(foodDetailParam);
+                    BeanUtils.copyProperties(foodDetailRest, foodDetailReturn);
+                    listFoodDetail.add(foodDetailReturn);
+                }
+                foodReturn.setFoodDetails(listFoodDetail);
+            }
+        } else {
+            throw new ErrorException("name " + name + " đã tồn tại");
+        }
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, foodReturn), HttpStatus.OK);
+    }
+
+    //save
+    @PostMapping("/food-old")
+    @Transactional
+    public ResponseEntity saveOld(@RequestBody FoodRequestModel foodRequestModel) {
         FoodResponseDto foodReturn = new FoodResponseDto();
 
         List<Food> checkExist = foodRepository.findAllByNameAndGroupId(foodRequestModel.getName(), foodRequestModel.getGroupId());

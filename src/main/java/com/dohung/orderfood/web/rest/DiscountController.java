@@ -8,6 +8,7 @@ import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.DiscountRepository;
 import com.dohung.orderfood.web.rest.request.DiscountRequestModel;
 import com.dohung.orderfood.web.rest.response.DiscountResponseDto;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import org.springframework.beans.BeanUtils;
@@ -25,6 +26,8 @@ public class DiscountController {
 
     @Autowired
     private DiscountRepository discountRepository;
+
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     // get all
     @GetMapping("/discounts")

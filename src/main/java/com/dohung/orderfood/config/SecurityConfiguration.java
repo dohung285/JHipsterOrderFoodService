@@ -4,12 +4,15 @@ import com.dohung.orderfood.security.*;
 import com.dohung.orderfood.security.SecurityUtils;
 import com.dohung.orderfood.security.oauth2.AudienceValidator;
 import com.dohung.orderfood.security.oauth2.JwtGrantedAuthorityConverter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -107,5 +110,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         jwtDecoder.setJwtValidator(withAudience);
 
         return jwtDecoder;
+    }
+
+    @Bean
+    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(mapper);
+        return converter;
     }
 }

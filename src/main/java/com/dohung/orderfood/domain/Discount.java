@@ -1,6 +1,7 @@
 package com.dohung.orderfood.domain;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import javax.persistence.*;
 
 @Entity
@@ -18,10 +19,10 @@ public class Discount {
     private Integer percent;
 
     @Column(name = "start_date")
-    private LocalDateTime startDate;
+    private Date startDate;
 
     @Column(name = "end_date")
-    private LocalDateTime endDate;
+    private Date endDate;
 
     @Column(name = "created_by")
     private String createdBy;
@@ -61,19 +62,19 @@ public class Discount {
         this.percent = percent;
     }
 
-    public LocalDateTime getStartDate() {
+    public Date getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
+    public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDateTime getEndDate() {
+    public Date getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDateTime endDate) {
+    public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
 
