@@ -22,6 +22,16 @@ public interface FoodRepository extends JpaRepository<Food, Integer> {
     )
     Optional<FoodByCatalogResponseDto> getAllById(@Param("foodId") Integer foodId);
 
+    @Query(
+        value = "select new com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto( f.id, f.name , f.price,f.description,d.percent, i.path ) from Food f left join Discount d on d.id=f.discountId left join Image i  on f.imageId = i.id where f.discountId is null "
+    )
+    List<FoodByCatalogResponseDto> getAllFoodForDiscount();
+
+    @Query(
+        value = "select new com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto( f.id, f.name , f.price,f.description,d.percent, i.path ) from Food f left join Discount d on d.id=f.discountId left join Image i  on f.imageId = i.id where f.discountId is not null "
+    )
+    List<FoodByCatalogResponseDto> getAllFoodHadDiscount();
+
     //    @Query(value = "select new com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto( f.id,f.name,f.price,f.description,f.discount_id, i.path ) from food f inner join image i on f.image_id = i.id where f.group_id = :foodGroupId ", nativeQuery = true)
     //    Page<Food> findAllByGroupId(Pageable paging, @Param("foodGroupId") Integer foodGroupId);
 

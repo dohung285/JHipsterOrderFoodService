@@ -7,6 +7,7 @@ import com.dohung.orderfood.domain.Discount;
 import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.DiscountRepository;
 import com.dohung.orderfood.web.rest.request.DiscountRequestModel;
+import com.dohung.orderfood.web.rest.response.DiscountObjectResponseDto;
 import com.dohung.orderfood.web.rest.response.DiscountResponseDto;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -29,23 +30,26 @@ public class DiscountController {
 
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
-    // get all
     @GetMapping("/discounts")
-    public ResponseEntity getAllDiscounts(
-        //        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size
-    ) {
+    public ResponseEntity getAllDiscounts() {
         List<Discount> listReturn = discountRepository.findAll();
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
+    }
 
-        //        Pageable paging = PageRequest.of(page - 1, size);
-        //        Page<Discount> discountPage = discountRepository.findAll(paging);
-        //        listReturn = discountPage.getContent();
-        //
-        //        Map<String, Object> response = new HashMap<>();
-        //        response.put("listReturn", listReturn);
-        //        response.put("currentPage", discountPage.getNumber());
-        //        response.put("totalItems", discountPage.getTotalElements());
-        //        response.put("totalPages", discountPage.getTotalPages());
+    // get all
+    @GetMapping("/discountId-foods")
+    public ResponseEntity getAllDiscountsForFood() {
+        List<DiscountObjectResponseDto> listReturn = new ArrayList<>();
+        List<Discount> listResult = discountRepository.findAll();
+        for (Discount x : listResult) {
+            Integer id = x.getId();
+            String nameAndPercent = x.getName() + "-" + x.getPercent() + "%";
+            DiscountObjectResponseDto discountObjectResponseDto = new DiscountObjectResponseDto();
+            discountObjectResponseDto.setCode(id);
+            discountObjectResponseDto.setName(nameAndPercent);
 
+            listReturn.add(discountObjectResponseDto);
+        }
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
     }
 
@@ -54,31 +58,33 @@ public class DiscountController {
     public ResponseEntity saveDiscount(@RequestBody DiscountRequestModel discountRequestModel) {
         DiscountResponseDto discountReturn = new DiscountResponseDto();
 
-        List<Discount> checkExist = discountRepository.findAllByStartDateIsBeforeAndEndDateIsBefore(
-            discountRequestModel.getStartDate(),
-            discountRequestModel.getEndDate()
-        );
-        if (checkExist.size() <= 0) {
-            Discount discountParam = new Discount();
+        Discount discountParam = new Discount();
 
-            discountParam.setName(discountRequestModel.getName());
-            discountParam.setPercent(discountRequestModel.getPercent());
-            discountParam.setStartDate(discountRequestModel.getStartDate());
-            discountParam.setEndDate(discountRequestModel.getEndDate());
-            discountParam.setCreatedBy("api");
-            discountParam.setCreatedDate(LocalDateTime.now());
+        discountParam.setName(discountRequestModel.getName());
+        discountParam.setPercent(discountRequestModel.getPercent());
+        discountParam.setStartDate(discountRequestModel.getStartDate());
+        discountParam.setEndDate(discountRequestModel.getEndDate());
+        discountParam.setCreatedBy("api");
+        discountParam.setCreatedDate(LocalDateTime.now());
 
-            Discount discountRest = discountRepository.save(discountParam);
+        Discount discountRest = discountRepository.save(discountParam);
 
-            BeanUtils.copyProperties(discountRest, discountReturn);
-        } else {
-            throw new ErrorException(
-                "Đã tồn tại đợt giảm giá  trong khoảng thời gian startDate: =" +
-                discountRequestModel.getStartDate() +
-                " và " +
-                discountRequestModel.getEndDate()
-            );
-        }
+        BeanUtils.copyProperties(discountRest, discountReturn);
+
+        //        List<Discount> checkExist = discountRepository.findAllByStartDateIsBeforeAndEndDateIsBefore(
+        //            discountRequestModel.getStartDate(),
+        //            discountRequestModel.getEndDate()
+        //        );
+        //        if (checkExist.size() <= 0) {
+        //
+        //        } else {
+        //            throw new ErrorException(
+        //                "Đã tồn tại đợt giảm giá  trong khoảng thời gian startDate: =" +
+        //                discountRequestModel.getStartDate() +
+        //                " và " +
+        //                discountRequestModel.getEndDate()
+        //            );
+        //        }
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, discountReturn), HttpStatus.OK);
     }
 

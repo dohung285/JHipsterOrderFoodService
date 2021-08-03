@@ -8,6 +8,7 @@ import com.dohung.orderfood.repository.CommentRepository;
 import com.dohung.orderfood.web.rest.request.CommentRequestModel;
 import com.dohung.orderfood.web.rest.response.CommentObjectResponseDto;
 import com.dohung.orderfood.web.rest.response.CommentResponeDto;
+import com.dohung.orderfood.web.rest.response.ObjectCountRatingResponseDto;
 import java.time.LocalDateTime;
 import java.util.*;
 import org.springframework.beans.BeanUtils;
@@ -28,23 +29,23 @@ public class CommentController {
 
     // get all
     @GetMapping("/comment")
-    public ResponseEntity getAll(
-        //        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size
-    ) {
+    public ResponseEntity getAll() {
         List<CommentObjectResponseDto> listReturn = commentRepository.getAll();
-        //        Pageable paging = PageRequest.of(page - 1, size);
-        //        Page<Comment> commentPage = commentRepository.findAll(paging);
-        //        listReturn = commentPage.getContent();
-        //
-        //        Map<String, Object> response = new HashMap<>();
-        //        response.put("listReturn", listReturn);
-        //        response.put("currentPage", commentPage.getNumber());
-        //        response.put("totalItems", commentPage.getTotalElements());
-        //        response.put("totalPages", commentPage.getTotalPages());
-        //
-        //        System.out.println("response: " + response);
-
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
+    }
+
+    // get all comment by foodId
+    @GetMapping("/comment/{foodId}")
+    public ResponseEntity getAllCommentByFoodId(@PathVariable("foodId") Integer foodId) {
+        List<Comment> listReturn = commentRepository.findAllByFoodIdAndOrderByCreatedDateDesc(foodId);
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
+    }
+
+    @GetMapping("/countStar")
+    public ResponseEntity countStar(@RequestParam Integer foodId) {
+        Object objectResult = commentRepository.countStar(foodId);
+        System.out.println("objectResult: " + objectResult);
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, objectResult), HttpStatus.OK);
     }
 
     // get 10 latest comments
