@@ -6,6 +6,8 @@ public class StringConstant {
 
     public static final String URL_API = "http://localhost:8080";
 
+    public static final String PUBLIC_URL_API = "http://localhost:8085";
+
     public static int iSUCCESS = 1000;
     public static int iERROR_EXCEPTION = 1001;
 
