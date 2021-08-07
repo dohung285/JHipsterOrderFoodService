@@ -3,6 +3,7 @@ package com.dohung.orderfood.web.rest.request;
 import com.dohung.orderfood.web.rest.response.ObjectOrderDetail;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 public class OrderRequestModel {
@@ -14,7 +15,7 @@ public class OrderRequestModel {
     private String username;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
-    private LocalDateTime dateOrder;
+    private Date dateOrder;
 
     private String note;
 
@@ -54,11 +55,11 @@ public class OrderRequestModel {
         this.username = username;
     }
 
-    public LocalDateTime getDateOrder() {
+    public Date getDateOrder() {
         return dateOrder;
     }
 
-    public void setDateOrder(LocalDateTime dateOrder) {
+    public void setDateOrder(Date dateOrder) {
         this.dateOrder = dateOrder;
     }
 

@@ -2,12 +2,13 @@ package com.dohung.orderfood.web.rest.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 public class OrderOfUserResponseDto {
 
     private Integer orderId;
-    private LocalDateTime dateOrder;
+    private Date dateOrder;
     private Integer status;
     private BigDecimal totalMoney;
 
@@ -15,7 +16,7 @@ public class OrderOfUserResponseDto {
 
     public OrderOfUserResponseDto() {}
 
-    public OrderOfUserResponseDto(Integer orderId, LocalDateTime dateOrder, Integer status, BigDecimal totalMoney) {
+    public OrderOfUserResponseDto(Integer orderId, Date dateOrder, Integer status, BigDecimal totalMoney) {
         this.orderId = orderId;
         this.dateOrder = dateOrder;
         this.status = status;
@@ -38,11 +39,11 @@ public class OrderOfUserResponseDto {
         this.orderId = orderId;
     }
 
-    public LocalDateTime getDateOrder() {
+    public Date getDateOrder() {
         return dateOrder;
     }
 
-    public void setDateOrder(LocalDateTime dateOrder) {
+    public void setDateOrder(Date dateOrder) {
         this.dateOrder = dateOrder;
     }
 

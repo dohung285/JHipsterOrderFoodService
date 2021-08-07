@@ -300,22 +300,22 @@ public class FoodController {
     //update discountId to create a discount for food
     @GetMapping("/food/byFoodGroup")
     public ResponseEntity getAllFoodByFoodGroup(
-        @RequestParam(name = "foodGroupId") Integer foodGroupId,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "5") int size
+        @RequestParam(name = "foodGroupId") Integer foodGroupId
+        //        @RequestParam(defaultValue = "0") int page,
+        //        @RequestParam(defaultValue = "5") int size
     ) {
-        List<FoodByCatalogResponseDto> listReturn = new ArrayList<>();
-        Pageable paging = PageRequest.of(page - 1, size);
+        //        List<FoodByCatalogResponseDto> listReturn = new ArrayList<>();
+        //        Pageable paging = PageRequest.of(page - 1, size);
 
-        Page<FoodByCatalogResponseDto> pageResult = foodRepository.findAllByGroupId(foodGroupId, paging);
-        listReturn = pageResult.getContent();
-        System.out.println(pageResult.getContent());
+        List<FoodByCatalogResponseDto> listReturn = foodRepository.findAllByGroupId(foodGroupId);
+        //        listReturn = pageResult.getContent();
+        //        System.out.println(pageResult.getContent());
 
         Map<String, Object> response = new HashMap<>();
         response.put("listReturn", listReturn);
-        response.put("currentPage", pageResult.getNumber());
-        response.put("totalItems", pageResult.getTotalElements());
-        response.put("totalPages", pageResult.getTotalPages());
+        //        response.put("currentPage", pageResult.getNumber());
+        //        response.put("totalItems", pageResult.getTotalElements());
+        //        response.put("totalPages", pageResult.getTotalPages());
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
     }

@@ -43,6 +43,6 @@ public interface FoodRepository extends JpaRepository<Food, Integer> {
     @Query(
         value = "select new com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto( f.id, f.name , f.price,f.description,f.discountId, i.path ) from Food f join Image i  on f.imageId = i.id where f.groupId =:foodGroupId "
     )
-    Page<FoodByCatalogResponseDto> findAllByGroupId(@Param("foodGroupId") Integer foodGroupId, Pageable paging);
+    List<FoodByCatalogResponseDto> findAllByGroupId(@Param("foodGroupId") Integer foodGroupId);
     //    Optional<Food> findAllByGroupId(Integer foodGroupId); new com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto
 }

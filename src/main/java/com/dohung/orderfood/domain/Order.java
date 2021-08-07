@@ -1,6 +1,7 @@
 package com.dohung.orderfood.domain;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import javax.persistence.*;
 
 @Entity
@@ -21,7 +22,7 @@ public class Order {
     private String username;
 
     @Column(name = "date_order")
-    private LocalDateTime dateOrder;
+    private Date dateOrder;
 
     @Column(name = "note")
     private String note;
@@ -72,11 +73,11 @@ public class Order {
         this.username = username;
     }
 
-    public LocalDateTime getDateOrder() {
+    public Date getDateOrder() {
         return dateOrder;
     }
 
-    public void setDateOrder(LocalDateTime dateOrder) {
+    public void setDateOrder(Date dateOrder) {
         this.dateOrder = dateOrder;
     }
 

@@ -1,6 +1,7 @@
 package com.dohung.orderfood.web.rest.response;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 public class ObjectOrderStatusResponseDto {
 
@@ -12,7 +13,7 @@ public class ObjectOrderStatusResponseDto {
 
     private String username;
 
-    private LocalDateTime dateOrder;
+    private Date dateOrder;
 
     private String note;
 
@@ -25,7 +26,7 @@ public class ObjectOrderStatusResponseDto {
         String address,
         String phone,
         String username,
-        LocalDateTime dateOrder,
+        Date dateOrder,
         String note,
         Integer status
     ) {
@@ -70,11 +71,11 @@ public class ObjectOrderStatusResponseDto {
         this.username = username;
     }
 
-    public LocalDateTime getDateOrder() {
+    public Date getDateOrder() {
         return dateOrder;
     }
 
-    public void setDateOrder(LocalDateTime dateOrder) {
+    public void setDateOrder(Date dateOrder) {
         this.dateOrder = dateOrder;
     }
 
