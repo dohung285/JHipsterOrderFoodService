@@ -17,11 +17,10 @@ import com.dohung.orderfood.web.rest.response.ObjectChildrenTree;
 import com.dohung.orderfood.web.rest.response.ObjectTreePer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -97,6 +96,43 @@ public class PermissionController {
         System.out.println("objectTreePerList: " + objectTreePerList);
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, objectTreePerList), HttpStatus.OK);
+    }
+
+    @GetMapping("/permission/function/{username}")
+    public ResponseEntity getAllFunctionNameByUsername(@PathVariable("username") String username) {
+        List<String> listReturn = functionSystemRepository.getAllFunctionNameByUsername(username);
+
+        Optional<PermissionCurrent> optionalPermissionCurrent = permissionCurrentRepository.findAllByUsername(username);
+        if (!optionalPermissionCurrent.isPresent()) {
+            throw new ErrorException("Không tìm thấy PermissionCurrent với username: = " + username);
+        }
+
+        PermissionCurrent permissionCurrentRest = optionalPermissionCurrent.get();
+
+        JSONObject jsonObject = new JSONObject(permissionCurrentRest.getCurrentPer().toString());
+
+        System.out.println("permissionCurrentRest.getCurrentPer(): " + permissionCurrentRest.getCurrentPer());
+        List<Integer> functIds = new ArrayList<>();
+        Iterator keys = jsonObject.keys();
+        while (keys.hasNext()) {
+            // loop to get the dynamic key
+            String currentFunctKey = (String) keys.next();
+            //            System.out.println("key: " + currentFunctKey);
+            //            System.out.println(NumberUtils.isCreatable(currentFunctKey));
+            if (NumberUtils.isCreatable(currentFunctKey)) {
+                functIds.add(Integer.parseInt(currentFunctKey));
+            }
+        }
+        //        for (Integer x : functIds) {
+        //            System.out.println("x: " + x);
+        //        }
+
+        List<FunctionSystem> listResult = functionSystemRepository.findByIdIn(functIds);
+        System.out.println("listResult: " + listResult);
+
+        List<String> listStringName = listResult.stream().flatMap(o -> Stream.of(o.getName())).collect(Collectors.toList());
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listStringName), HttpStatus.OK);
     }
 
     @GetMapping("/permission/{username}")
