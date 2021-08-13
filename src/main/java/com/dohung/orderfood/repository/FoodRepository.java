@@ -4,6 +4,7 @@ import com.dohung.orderfood.domain.Food;
 import com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto;
 import java.util.List;
 import java.util.Optional;
+import javax.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -43,6 +44,15 @@ public interface FoodRepository extends JpaRepository<Food, Integer> {
     @Query(
         value = "select new com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto( f.id, f.name , f.price,f.description,f.discountId, i.path ) from Food f join Image i  on f.imageId = i.id where f.groupId =:foodGroupId "
     )
-    List<FoodByCatalogResponseDto> findAllByGroupId(@Param("foodGroupId") Integer foodGroupId);
+    List<FoodByCatalogResponseDto> getAllByGroupId(@Param("foodGroupId") Integer foodGroupId);
+
     //    Optional<Food> findAllByGroupId(Integer foodGroupId); new com.dohung.orderfood.web.rest.response.FoodByCatalogResponseDto
+
+    @Query(
+        value = "select f.name , count(od.food_id) as number from food f left join order_food_detail od on f.id = od.food_id left join order_food o on o.id = od.order_id  where day(o.date_order) = DAY(CURDATE()) group by f.id ",
+        nativeQuery = true
+    )
+    List<Tuple> getCountBuyOfAllFood();
+
+    List<Food> findAllByGroupId(Integer foodGroupId);
 }

@@ -3,10 +3,12 @@ package com.dohung.orderfood.web.rest;
 import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
 import com.dohung.orderfood.domain.Discount;
+import com.dohung.orderfood.domain.Food;
 import com.dohung.orderfood.domain.FoodGroup;
 import com.dohung.orderfood.domain.Menu;
 import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.FoodGroupRepository;
+import com.dohung.orderfood.repository.FoodRepository;
 import com.dohung.orderfood.repository.MenuRepository;
 import com.dohung.orderfood.web.rest.request.FoodGroupRequestModel;
 import com.dohung.orderfood.web.rest.response.FoodGroupResponseDto;
@@ -30,6 +32,9 @@ public class FoodGroupController {
     private FoodGroupRepository foodGroupRepository;
 
     @Autowired
+    private FoodRepository foodRepository;
+
+    @Autowired
     private MenuRepository menuRepository;
 
     // get all
@@ -38,17 +43,6 @@ public class FoodGroupController {
         //        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size
     ) {
         List<FoodGroup> listReturn = foodGroupRepository.findAll();
-
-        //        Pageable paging = PageRequest.of(page - 1, size);
-        //        Page<FoodGroup> foodGroupPage = foodGroupRepository.findAll(paging);
-        //        listReturn = foodGroupPage.getContent();
-        //
-        //        Map<String, Object> response = new HashMap<>();
-        //        response.put("listReturn", listReturn);
-        //        response.put("currentPage", foodGroupPage.getNumber());
-        //        response.put("totalItems", foodGroupPage.getTotalElements());
-        //        response.put("totalPages", foodGroupPage.getTotalPages());
-
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
     }
 
@@ -57,6 +51,10 @@ public class FoodGroupController {
     @Transactional
     public ResponseEntity saveFoodGroup(@RequestBody FoodGroupRequestModel foodGroupRequestModel) {
         FoodGroupResponseDto foodGroupReturn = new FoodGroupResponseDto();
+
+        if (foodGroupRequestModel.getName() == null || foodGroupRequestModel.getName().equals("")) {
+            throw new ErrorException("Tên món ăn không được bỏ trống");
+        }
 
         List<FoodGroup> checkExist = foodGroupRepository.findAllByName(foodGroupRequestModel.getName());
         if (checkExist.size() <= 0) {
@@ -76,8 +74,8 @@ public class FoodGroupController {
             menuParam.setRoleName("admin");
             menuParam.setName(foodGroupRest.getName());
             menuParam.setLevel(1);
-            menuParam.setParentId(4); // trong db la 4
-            menuParam.setRoleName(null);
+            menuParam.setParentId(3); // trong db la 3
+
             menuParam.setLink("/catalog/" + foodId);
 
             menuParam.setCreatedBy("api");
@@ -105,8 +103,21 @@ public class FoodGroupController {
             throw new ErrorException("Không tìm thấy FoodGroup với foodGroupId:= " + foodGroupId);
         }
         String foodGroupName = optionalFoodGroup.get().getName();
-
         foodGroupRepository.delete(optionalFoodGroup.get());
+
+        List<Food> listFoodDeleted = foodRepository.findAllByGroupId(foodGroupId);
+        if (listFoodDeleted.size() > 0) {
+            System.out.println("listFoodDeleted: " + listFoodDeleted);
+            foodRepository.deleteAll(listFoodDeleted);
+        }
+
+        //xóa menu
+        Optional<Menu> optionalMenu = menuRepository.findAllByName(foodGroupName);
+        if (!optionalMenu.isPresent()) {
+            throw new ErrorException("Không tìm thấy Menu với name:= " + foodGroupName);
+        }
+        //delete
+        menuRepository.delete(optionalMenu.get());
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "sucessful"), HttpStatus.OK);
     }
 }

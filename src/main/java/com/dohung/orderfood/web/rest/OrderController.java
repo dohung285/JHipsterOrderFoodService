@@ -1,5 +1,9 @@
 package com.dohung.orderfood.web.rest;
 
+import static java.util.Comparator.comparingInt;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
+
 import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
 import com.dohung.orderfood.domain.*;
@@ -11,6 +15,7 @@ import com.dohung.orderfood.repository.OrderStatusRepository;
 import com.dohung.orderfood.web.rest.request.OrderRequestModel;
 import com.dohung.orderfood.web.rest.response.*;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -40,6 +45,41 @@ public class OrderController {
 
     @Autowired
     private BillRepository billRepository;
+
+    // get all
+    @GetMapping("/order/allYear")
+    public ResponseEntity getAllYearOrder() {
+        List<ObjectDropdown> listReturn = new ArrayList<>();
+
+        List<Order> listResult = orderRepository.findAll();
+
+        List<ObjectDropdown> listReturnDate = listResult
+            .stream()
+            .map(x -> new ObjectDropdown(String.valueOf(x.getId()), String.valueOf(x.getDateOrder())))
+            .collect(Collectors.toList());
+
+        //        System.out.println("listReturnDate: " + listReturnDate);
+
+        List<ObjectDropdownInteger> listDropdownInteger = new ArrayList<>();
+        for (ObjectDropdown x : listReturnDate) {
+            try {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(x.getName()));
+                Integer year = calendar.get(Calendar.YEAR);
+
+                ObjectDropdownInteger objectDropdownInteger = new ObjectDropdownInteger(x.getCode(), year);
+                listDropdownInteger.add(objectDropdownInteger);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        List<ObjectDropdownInteger> listReturnInteger = listDropdownInteger
+            .stream()
+            .collect(collectingAndThen(toCollection(() -> new TreeSet<>(comparingInt(ObjectDropdownInteger::getName))), ArrayList::new));
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturnInteger), HttpStatus.OK);
+    }
 
     // get all
     @GetMapping("/order")
@@ -135,6 +175,8 @@ public class OrderController {
 
         Order orderRest = orderRepository.save(orderParam);
         BeanUtils.copyProperties(orderRest, orderReturn);
+
+        System.out.println("Timezone: " + java.util.TimeZone.getDefault());
 
         Integer orderId = orderRest.getId();
         // thêm vào bảng order_status

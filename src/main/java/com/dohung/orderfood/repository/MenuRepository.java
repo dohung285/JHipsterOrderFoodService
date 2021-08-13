@@ -15,4 +15,6 @@ public interface MenuRepository extends JpaRepository<Menu, Integer> {
 
     @Query(value = "select * from menu  ", nativeQuery = true) //m where  m.role_name != 'admin'
     List<Menu> getAllMenuNotRole();
+
+    Optional<Menu> findAllByName(String foodGroupName);
 }
