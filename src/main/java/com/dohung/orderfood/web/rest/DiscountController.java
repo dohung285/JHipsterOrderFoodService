@@ -9,6 +9,7 @@ import com.dohung.orderfood.repository.DiscountRepository;
 import com.dohung.orderfood.web.rest.request.DiscountRequestModel;
 import com.dohung.orderfood.web.rest.response.DiscountObjectResponseDto;
 import com.dohung.orderfood.web.rest.response.DiscountResponseDto;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,15 +33,25 @@ public class DiscountController {
 
     @GetMapping("/discounts")
     public ResponseEntity getAllDiscounts() {
+        Date currentDate = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String strDate = sdf.format(currentDate);
+        System.out.println("strDate: " + strDate);
+
         List<Discount> listReturn = discountRepository.findAll();
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
     }
 
     // get all
     @GetMapping("/discountId-foods")
-    public ResponseEntity getAllDiscountsForFood() {
+    public ResponseEntity getAllDiscountsForFood() throws ParseException {
+        Date currentDate = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String strDate = sdf.format(currentDate);
+        System.out.println("strDate: " + strDate);
+
         List<DiscountObjectResponseDto> listReturn = new ArrayList<>();
-        List<Discount> listResult = discountRepository.findAll();
+        List<Discount> listResult = discountRepository.findAllByEndDateGreaterThanEqual(new SimpleDateFormat("yyyy-MM-dd").parse(strDate));
         for (Discount x : listResult) {
             Integer id = x.getId();
             String nameAndPercent = x.getName() + "-" + x.getPercent() + "%";

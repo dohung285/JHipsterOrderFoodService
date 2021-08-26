@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -85,6 +86,18 @@ public class FoodController {
 
     // get all
     @GetMapping("/food")
+    public ResponseEntity getAllNoPaging() {
+        List<Tuple> listResult = foodRepository.getAllNoPaging();
+
+        List<ObjectFoodResponseDto> listReturn = listResult
+            .stream()
+            .map(x -> new ObjectFoodResponseDto(x.get(0, Integer.class), x.get(1, String.class), x.get(2, String.class)))
+            .collect(Collectors.toList());
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
+    }
+
+    // get all
+    @GetMapping("/food/all/paging")
     public ResponseEntity getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
         List<FoodResponseDto> listReturn = new ArrayList<>();
 
@@ -159,26 +172,38 @@ public class FoodController {
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, foodReturn), HttpStatus.OK);
     }
 
+    //search food
+    @GetMapping("/food/search")
+    public ResponseEntity searchFood(
+        @RequestParam(name = "foodGroupId") Integer foodGroupId,
+        @RequestParam(name = "foodName") String foodName
+    ) {
+        List<Tuple> listReturn = foodRepository.getAllByNameContainingAndGroupId(foodName, foodGroupId);
+
+        List<FoodByCatalogResponseDto> listResultCountAPI = listReturn
+            .stream()
+            .map(
+                x ->
+                    new FoodByCatalogResponseDto(
+                        x.get(0, Integer.class),
+                        x.get(1, String.class),
+                        x.get(2, BigDecimal.class),
+                        x.get(3, String.class),
+                        x.get(4, Integer.class),
+                        x.get(5, String.class)
+                    )
+            )
+            .collect(Collectors.toList());
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listResultCountAPI), HttpStatus.OK);
+    }
+
     //update discountId to create a discount for food
     @GetMapping("/food/byFoodGroup")
-    public ResponseEntity getAllFoodByFoodGroup(
-        @RequestParam(name = "foodGroupId") Integer foodGroupId
-        //        @RequestParam(defaultValue = "0") int page,
-        //        @RequestParam(defaultValue = "5") int size
-    ) {
-        //        List<FoodByCatalogResponseDto> listReturn = new ArrayList<>();
-        //        Pageable paging = PageRequest.of(page - 1, size);
-
+    public ResponseEntity getAllFoodByFoodGroup(@RequestParam(name = "foodGroupId") Integer foodGroupId) {
         List<FoodByCatalogResponseDto> listReturn = foodRepository.getAllByGroupId(foodGroupId);
-        //        listReturn = pageResult.getContent();
-        //        System.out.println(pageResult.getContent());
-
         Map<String, Object> response = new HashMap<>();
         response.put("listReturn", listReturn);
-        //        response.put("currentPage", pageResult.getNumber());
-        //        response.put("totalItems", pageResult.getTotalElements());
-        //        response.put("totalPages", pageResult.getTotalPages());
-
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
     }
 
@@ -404,6 +429,7 @@ public class FoodController {
         //xóa parent
         foodRepository.delete(optionalComment.get());
 
+        //Xóa detail
         List<FoodDetail> foodDetails = foodDetailRepository.findAllByIdIn(Collections.singletonList(id));
         if (foodDetails.size() > 0) {
             List<Integer> foodIds = new ArrayList<>();

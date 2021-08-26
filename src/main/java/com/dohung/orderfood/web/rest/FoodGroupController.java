@@ -39,9 +39,7 @@ public class FoodGroupController {
 
     // get all
     @GetMapping("/foodGroup")
-    public ResponseEntity getAllFoodGroup(
-        //        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size
-    ) {
+    public ResponseEntity getAllFoodGroup() {
         List<FoodGroup> listReturn = foodGroupRepository.findAll();
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
     }
@@ -110,7 +108,6 @@ public class FoodGroupController {
             System.out.println("listFoodDeleted: " + listFoodDeleted);
             foodRepository.deleteAll(listFoodDeleted);
         }
-
         //xóa menu
         Optional<Menu> optionalMenu = menuRepository.findAllByName(foodGroupName);
         if (!optionalMenu.isPresent()) {

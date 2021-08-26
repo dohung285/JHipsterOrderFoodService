@@ -3,15 +3,22 @@ package com.dohung.orderfood.web.rest;
 import com.dohung.orderfood.common.MethodCommon;
 import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
+import com.dohung.orderfood.domain.PermissionCurrent;
+import com.dohung.orderfood.domain.UserPermission;
 import com.dohung.orderfood.exception.ErrorException;
+import com.dohung.orderfood.repository.PermissionCurrentRepository;
+import com.dohung.orderfood.repository.UserPermissionRepository;
 import com.dohung.orderfood.web.rest.request.ChangePasswordKeycloak;
 import com.dohung.orderfood.web.rest.request.UserChangePasswordRequestModel;
 import com.dohung.orderfood.web.rest.request.UserDetailsRequestModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.discovery.converters.Auto;
+import java.util.Optional;
 import java.util.UUID;
 import javax.ws.rs.PUT;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -24,6 +31,12 @@ import tech.jhipster.config.JHipsterDefaults;
 @RequestMapping("/api")
 @Slf4j
 public class AccountController {
+
+    @Autowired
+    private UserPermissionRepository userPermissionRepository;
+
+    @Autowired
+    private PermissionCurrentRepository permissionCurrentRepository;
 
     @GetMapping("/accounts")
     public ResponseEntity authenticate() {
@@ -211,7 +224,8 @@ public class AccountController {
     }
 
     @DeleteMapping("/delete-account/{id}")
-    public ResponseEntity deleteAccount(@PathVariable("id") String id) throws Exception {
+    @Transactional
+    public ResponseEntity deleteAccount(@PathVariable("id") String id, @RequestParam String username) throws Exception {
         RestTemplate restTemplate = new RestTemplate(); // dùng restemplate để call api
 
         UUID uid = UUID.fromString(id);
@@ -231,6 +245,19 @@ public class AccountController {
 
         System.out.println("answer: " + answer);
         JSONObject jsonObject = new JSONObject(answer);
+
+        Optional<UserPermission> optionalUserPermission = userPermissionRepository.findByUsername(username);
+        if (!optionalUserPermission.isPresent()) {
+            throw new ErrorException("Không tìm thấy UserPermission với username: " + username);
+        }
+        userPermissionRepository.delete(optionalUserPermission.get());
+
+        Optional<PermissionCurrent> optionalPermissionCurrent = permissionCurrentRepository.findByUsername(username);
+        if (!optionalPermissionCurrent.isPresent()) {
+            throw new ErrorException("Không tìm thấy PermissionCurrent với username: " + username);
+        }
+        permissionCurrentRepository.delete(optionalPermissionCurrent.get());
+
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, jsonObject.get("statusCodeValue")), HttpStatus.OK);
         //        return new ResponseEntity(jsonObject.get("statusCodeValue"), HttpStatus.OK);
     }

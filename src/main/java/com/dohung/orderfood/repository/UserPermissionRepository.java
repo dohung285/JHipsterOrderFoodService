@@ -28,4 +28,6 @@ public interface UserPermissionRepository extends JpaRepository<UserPermission, 
 
     @Query(" SELECT u.id FROM UserPermission u  where  u.username = :username and u.accountType = 0  ")
     Optional<UserPermission> checkUsernameIsRoot(@Param("username") String username);
+
+    Optional<UserPermission> findByUsername(String username);
 }

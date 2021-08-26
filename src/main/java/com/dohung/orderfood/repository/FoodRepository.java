@@ -8,6 +8,7 @@ import javax.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -55,4 +56,36 @@ public interface FoodRepository extends JpaRepository<Food, Integer> {
     List<Tuple> getCountBuyOfAllFood();
 
     List<Food> findAllByGroupId(Integer foodGroupId);
+
+    @Query("select f from Food f where f.discountId in (:discountIds)")
+    List<Food> getAllFoodsWithDiscountIds(@Param("discountIds") List<Integer> discountIds);
+
+    @Modifying
+    @Query("update Food f set f.discountId = null where f.id in (:foodIds)")
+    void updateDiscountIdInFood(@Param("foodIds") List<Integer> foodIds);
+
+    List<Food> findAllByNameLikeAndGroupId(String foodName, Integer foodGroupId);
+
+    @Query(
+        "" +
+        "	SELECT 	" +
+        "	    f.id ,	" +
+        "	    f.name ,	" +
+        "	    f.price ,	" +
+        "	    f.description ,	" +
+        "	    f.discountId ,	" +
+        "	    i.path 	" +
+        "	FROM	" +
+        "	    Food f	" +
+        "	        LEFT OUTER JOIN	" +
+        "	    Image i ON (f.imageId = i.id)	" +
+        "	WHERE	" +
+        "	    f.groupId = :foodGroupId	" +
+        "	        AND (f.name LIKE %:foodName%)	" +
+        ""
+    )
+    List<Tuple> getAllByNameContainingAndGroupId(@Param("foodName") String foodName, @Param("foodGroupId") Integer foodGroupId);
+
+    @Query(" select f.id,f.name,i.path from Food f left join Image i on f.imageId = i.id ")
+    List<Tuple> getAllNoPaging();
 }

@@ -1,6 +1,7 @@
 package com.dohung.orderfood.domain;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import javax.persistence.*;
 
 @Entity
@@ -23,6 +24,12 @@ public class OrderStatus {
     @Column(name = "created_date")
     private LocalDateTime createdDate;
 
+    @Column(name = "date_processed")
+    private Date dateProcessed;
+
+    @Column(name = "date_delivered")
+    private Date dateDelivered;
+
     @Column(name = "last_modified_by")
     private String lastModifiedBy;
 
@@ -30,6 +37,22 @@ public class OrderStatus {
     private LocalDateTime lastModifiedDate;
 
     public OrderStatus() {}
+
+    public Date getDateProcessed() {
+        return dateProcessed;
+    }
+
+    public void setDateProcessed(Date dateProcessed) {
+        this.dateProcessed = dateProcessed;
+    }
+
+    public Date getDateDelivered() {
+        return dateDelivered;
+    }
+
+    public void setDateDelivered(Date dateDelivered) {
+        this.dateDelivered = dateDelivered;
+    }
 
     public Integer getId() {
         return id;
@@ -47,8 +70,8 @@ public class OrderStatus {
         this.orderId = orderId;
     }
 
-    public Integer getStatus(Integer status) {
-        return this.status;
+    public Integer getStatus() {
+        return status;
     }
 
     public void setStatus(Integer status) {

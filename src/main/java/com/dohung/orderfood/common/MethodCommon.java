@@ -1,6 +1,9 @@
 package com.dohung.orderfood.common;
 
 import com.dohung.orderfood.domain.Comment;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,5 +79,9 @@ public class MethodCommon {
         }
 
         return true;
+    }
+
+    public static Date convertLocalDateTimeToDate(LocalDateTime dateToConvert) {
+        return java.util.Date.from(dateToConvert.atZone(ZoneId.systemDefault()).toInstant());
     }
 }

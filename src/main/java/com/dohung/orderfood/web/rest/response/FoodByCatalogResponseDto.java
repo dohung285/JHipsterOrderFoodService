@@ -25,6 +25,8 @@ public class FoodByCatalogResponseDto {
         this.path = path;
     }
 
+    public <X>FoodByCatalogResponseDto(X x, X x1, X x2, X x3, X x4) {}
+
     public Integer getId() {
         return id;
     }

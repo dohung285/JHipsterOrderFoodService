@@ -10,4 +10,6 @@ public interface PermissionCurrentRepository extends JpaRepository<PermissionCur
     Optional<PermissionCurrent> findAllByUsername(String username);
 
     void deleteByUsername(String usernameDeleted);
+
+    Optional<PermissionCurrent> findByUsername(String username);
 }

@@ -1,5 +1,6 @@
 package com.dohung.orderfood.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import javax.persistence.*;
@@ -22,6 +23,9 @@ public class Discount {
     private Date startDate;
 
     @Column(name = "end_date")
+    //    @Temporal(TemporalType.TIMESTAMP)
+    //    @JsonFormat(pattern="yyyy-MM-dd")
+    @Temporal(TemporalType.DATE)
     private Date endDate;
 
     @Column(name = "created_by")
