@@ -13,6 +13,7 @@ import com.dohung.orderfood.repository.FoodRepository;
 import com.dohung.orderfood.web.rest.request.CreateDiscountFood;
 import com.dohung.orderfood.web.rest.request.FoodRequestModel;
 import com.dohung.orderfood.web.rest.request.ObjectFoodDetail;
+import com.dohung.orderfood.web.rest.request.UpdateFoodRequestModel;
 import com.dohung.orderfood.web.rest.response.*;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -61,28 +62,28 @@ public class FoodController {
     @Autowired
     OAuth2AuthorizedClientService clientService;
 
-    @GetMapping("/currentAccessToken")
-    public String getAuthorizationHeader() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
-            String name = oauthToken.getName();
-            String registrationId = oauthToken.getAuthorizedClientRegistrationId();
-            OAuth2AuthorizedClient client = clientService.loadAuthorizedClient(registrationId, name);
-
-            if (null == client) {
-                throw new OAuth2AuthorizationException(new OAuth2Error("access_denied", "The token is expired", null));
-            }
-            OAuth2AccessToken accessToken = client.getAccessToken();
-
-            if (accessToken != null) {
-                String tokenType = accessToken.getTokenType().getValue();
-                String accessTokenValue = accessToken.getTokenValue();
-                return accessTokenValue;
-            }
-        }
-        return null;
-    }
+    //    @GetMapping("/currentAccessToken")
+    //    public String getAuthorizationHeader() {
+    //        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    //        if (authentication instanceof OAuth2AuthenticationToken) {
+    //            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+    //            String name = oauthToken.getName();
+    //            String registrationId = oauthToken.getAuthorizedClientRegistrationId();
+    //            OAuth2AuthorizedClient client = clientService.loadAuthorizedClient(registrationId, name);
+    //
+    //            if (null == client) {
+    //                throw new OAuth2AuthorizationException(new OAuth2Error("access_denied", "The token is expired", null));
+    //            }
+    //            OAuth2AccessToken accessToken = client.getAccessToken();
+    //
+    //            if (accessToken != null) {
+    //                String tokenType = accessToken.getTokenType().getValue();
+    //                String accessTokenValue = accessToken.getTokenValue();
+    //                return accessTokenValue;
+    //            }
+    //        }
+    //        return null;
+    //    }
 
     // get all
     @GetMapping("/food")
@@ -91,7 +92,15 @@ public class FoodController {
 
         List<ObjectFoodResponseDto> listReturn = listResult
             .stream()
-            .map(x -> new ObjectFoodResponseDto(x.get(0, Integer.class), x.get(1, String.class), x.get(2, String.class)))
+            .map(
+                x ->
+                    new ObjectFoodResponseDto(
+                        x.get(0, Integer.class),
+                        x.get(1, String.class),
+                        x.get(2, String.class),
+                        x.get(3, BigDecimal.class)
+                    )
+            )
             .collect(Collectors.toList());
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
     }
@@ -190,7 +199,8 @@ public class FoodController {
                         x.get(2, BigDecimal.class),
                         x.get(3, String.class),
                         x.get(4, Integer.class),
-                        x.get(5, String.class)
+                        x.get(5, Integer.class),
+                        x.get(6, String.class)
                     )
             )
             .collect(Collectors.toList());
@@ -205,6 +215,34 @@ public class FoodController {
         Map<String, Object> response = new HashMap<>();
         response.put("listReturn", listReturn);
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, response), HttpStatus.OK);
+    }
+
+    //update price and name of food
+    @PutMapping("/food/priceAndName/{id}")
+    public ResponseEntity updatePriceAndNameOfProduct(
+        @PathVariable("id") Integer id,
+        @RequestBody UpdateFoodRequestModel updateFoodRequestModel
+    ) {
+        Optional<Food> optionalFood = foodRepository.findAllById(id);
+        if (!optionalFood.isPresent()) {
+            throw new ErrorException("Không tìm thấy Food với id: " + id);
+        }
+
+        Food foodRest = optionalFood.get();
+        String currentName = foodRest.getName();
+
+        if (currentName != updateFoodRequestModel.getName()) {
+            List<Food> optionalFoodName = foodRepository.findAllByNameAndNameNot(updateFoodRequestModel.getName(), currentName);
+            if (optionalFoodName.size() > 0) {
+                throw new ErrorException("Đã tồn tại tên: " + updateFoodRequestModel.getName());
+            }
+        }
+
+        foodRest.setName(updateFoodRequestModel.getName());
+        foodRest.setPrice(updateFoodRequestModel.getPrice());
+
+        foodRepository.save(foodRest);
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "Success"), HttpStatus.OK);
     }
 
     //update discountId to create a discount for food
@@ -336,6 +374,7 @@ public class FoodController {
             foodParam.setGroupId(groupId);
             foodParam.setImageId(listInteger.get(0));
             foodParam.setDescription(desciption);
+            foodParam.setIsDeleted(0);
 
             foodParam.setCreatedBy("api");
             foodParam.setCreatedDate(LocalDateTime.now());
@@ -363,80 +402,124 @@ public class FoodController {
                 foodReturn.setFoodDetails(listFoodDetail);
             }
         } else {
-            throw new ErrorException("name " + name + " đã tồn tại");
+            throw new ErrorException("Tên " + name + " đã tồn tại");
         }
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, foodReturn), HttpStatus.OK);
     }
 
-    //save
-    @PostMapping("/food-old")
-    @Transactional
-    public ResponseEntity saveOld(@RequestBody FoodRequestModel foodRequestModel) {
-        FoodResponseDto foodReturn = new FoodResponseDto();
-
-        List<Food> checkExist = foodRepository.findAllByNameAndGroupId(foodRequestModel.getName(), foodRequestModel.getGroupId());
-        if (checkExist.size() <= 0) {
-            Food foodParam = new Food();
-
-            foodParam.setName(foodRequestModel.getName());
-            foodParam.setPrice(foodRequestModel.getPrice());
-            foodParam.setGroupId(foodRequestModel.getGroupId());
-            foodParam.setImageId(foodRequestModel.getImageId());
-            foodParam.setDescription(foodRequestModel.getDesciption());
-
-            foodParam.setCreatedBy("api");
-            foodParam.setCreatedDate(LocalDateTime.now());
-
-            Food foodRest = foodRepository.save(foodParam);
-            BeanUtils.copyProperties(foodRest, foodReturn);
-
-            Integer foodId = foodRest.getId();
-            List<ObjectFoodDetail> list = foodRequestModel.getFoodDetails();
-            List<FoodDetailResponseDto> listFoodDetail = new ArrayList<>();
-            for (ObjectFoodDetail item : list) {
-                FoodDetailResponseDto foodDetailReturn = new FoodDetailResponseDto();
-
-                FoodDetail foodDetailParam = new FoodDetail();
-                foodDetailParam.setId(new FoodIdentity(foodId, item.getImageId()));
-                foodDetailParam.setDesciption(item.getDescription());
-
-                foodDetailParam.setCreatedBy("api");
-                foodDetailParam.setCreatedDate(LocalDateTime.now());
-                foodDetailParam.setLastModifiedDate(LocalDateTime.now());
-
-                FoodDetail foodDetailRest = foodDetailRepository.save(foodDetailParam);
-                BeanUtils.copyProperties(foodDetailRest, foodDetailReturn);
-
-                listFoodDetail.add(foodDetailReturn);
-            }
-            foodReturn.setFoodDetails(listFoodDetail);
-        } else {
-            throw new ErrorException("name " + foodRequestModel.getName() + " đã tồn tại");
-        }
-
-        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, foodReturn), HttpStatus.OK);
-    }
+    //    //save
+    //    @PostMapping("/food-old")
+    //    @Transactional
+    //    public ResponseEntity saveOld(@RequestBody FoodRequestModel foodRequestModel) {
+    //        FoodResponseDto foodReturn = new FoodResponseDto();
+    //
+    //        List<Food> checkExist = foodRepository.findAllByNameAndGroupId(foodRequestModel.getName(), foodRequestModel.getGroupId());
+    //        if (checkExist.size() <= 0) {
+    //            Food foodParam = new Food();
+    //
+    //            foodParam.setName(foodRequestModel.getName());
+    //            foodParam.setPrice(foodRequestModel.getPrice());
+    //            foodParam.setGroupId(foodRequestModel.getGroupId());
+    //            foodParam.setImageId(foodRequestModel.getImageId());
+    //            foodParam.setDescription(foodRequestModel.getDesciption());
+    //
+    //            foodParam.setCreatedBy("api");
+    //            foodParam.setCreatedDate(LocalDateTime.now());
+    //
+    //            Food foodRest = foodRepository.save(foodParam);
+    //            BeanUtils.copyProperties(foodRest, foodReturn);
+    //
+    //            Integer foodId = foodRest.getId();
+    //            List<ObjectFoodDetail> list = foodRequestModel.getFoodDetails();
+    //            List<FoodDetailResponseDto> listFoodDetail = new ArrayList<>();
+    //            for (ObjectFoodDetail item : list) {
+    //                FoodDetailResponseDto foodDetailReturn = new FoodDetailResponseDto();
+    //
+    //                FoodDetail foodDetailParam = new FoodDetail();
+    //                foodDetailParam.setId(new FoodIdentity(foodId, item.getImageId()));
+    //                foodDetailParam.setDesciption(item.getDescription());
+    //
+    //                foodDetailParam.setCreatedBy("api");
+    //                foodDetailParam.setCreatedDate(LocalDateTime.now());
+    //                foodDetailParam.setLastModifiedDate(LocalDateTime.now());
+    //
+    //                FoodDetail foodDetailRest = foodDetailRepository.save(foodDetailParam);
+    //                BeanUtils.copyProperties(foodDetailRest, foodDetailReturn);
+    //
+    //                listFoodDetail.add(foodDetailReturn);
+    //            }
+    //            foodReturn.setFoodDetails(listFoodDetail);
+    //        } else {
+    //            throw new ErrorException("name " + foodRequestModel.getName() + " đã tồn tại");
+    //        }
+    //
+    //        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, foodReturn), HttpStatus.OK);
+    //    }
 
     //delete
     @DeleteMapping("/food/{id}")
     @Transactional
     public ResponseEntity delete(@PathVariable("id") Integer id) {
-        Optional<Food> optionalComment = foodRepository.findById(id);
-        if (!optionalComment.isPresent()) {
+        Optional<Food> optionalFood = foodRepository.findById(id);
+        if (!optionalFood.isPresent()) {
             throw new ErrorException("Không tìm thấy Food với id:= " + id);
         }
-        //xóa parent
-        foodRepository.delete(optionalComment.get());
+        //xóa parent thực chất là update
+        //        foodRepository.delete(optionalFood.get());
+        Food foodRest = optionalFood.get();
+        foodRest.setIsDeleted(1);
+        foodRepository.save(foodRest);
 
         //Xóa detail
         List<FoodDetail> foodDetails = foodDetailRepository.findAllByIdIn(Collections.singletonList(id));
+        // lấy ra list FoodId từ list FoodDetail
+        List<FoodIdentity> foodIdentitys = foodDetails.stream().map(FoodDetail::getId).collect(Collectors.toList());
+
+        List<Integer> foodIdsInDetail = foodIdentitys.stream().map(FoodIdentity::getFoodId).collect(Collectors.toList());
+
         if (foodDetails.size() > 0) {
-            List<Integer> foodIds = new ArrayList<>();
-            for (FoodDetail x : foodDetails) {
-                FoodIdentity foodIdentity = new FoodIdentity(x.getId().getFoodId(), x.getId().getImageId());
-                foodDetailRepository.deleteAllById(foodIdentity);
-            }
+            // delete all by Ids
+            foodDetailRepository.deleteAllByFoodId(foodIdsInDetail);
+        }
+
+        //        if (foodDetails.size() > 0) {
+        //            List<Integer> foodIds = new ArrayList<>();
+        //            for (FoodDetail x : foodDetails) {
+        //                FoodIdentity foodIdentity = new FoodIdentity(x.getId().getFoodId(), x.getId().getImageId());
+        //                foodDetailRepository.deleteAllById(foodIdentity);
+        //            }
+        //        }
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "sucessful"), HttpStatus.OK);
+    }
+
+    //delete all
+    @DeleteMapping("/food/delete-ids")
+    @Transactional
+    public ResponseEntity deleteListFoodIds(@RequestParam List<Integer> ids) {
+        List<Food> foods = foodRepository.findAllByIdIn(ids);
+
+        List<Integer> foodIds = foods.stream().map(Food::getId).collect(Collectors.toList());
+
+        //        //xóa parent
+        //        foodRepository.deleteInBatch(foods);
+
+        //xóa parent thực chất là update
+        //        foodRepository.delete(optionalFood.get());
+        foodRepository.updateIsDeleted(foodIds);
+
+        //Xóa detail
+        List<FoodDetail> foodDetails = foodDetailRepository.findAllByIdIn(foodIds);
+        // lấy ra list FoodId từ list FoodDetail
+        List<FoodIdentity> foodIdentitys = foodDetails.stream().map(FoodDetail::getId).collect(Collectors.toList());
+
+        List<Integer> foodIdsInDetail = foodIdentitys.stream().map(FoodIdentity::getFoodId).distinct().collect(Collectors.toList());
+
+        System.out.println("foodId in foodDetails: " + foodIdsInDetail);
+        if (foodDetails.size() > 0) {
+            // delete all by Ids
+            foodDetailRepository.deleteAllByFoodId(foodIdsInDetail);
         }
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "sucessful"), HttpStatus.OK);

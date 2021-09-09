@@ -4,6 +4,7 @@ import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
 
+import com.dohung.orderfood.common.MethodCommon;
 import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
 import com.dohung.orderfood.domain.*;
@@ -12,23 +13,31 @@ import com.dohung.orderfood.repository.BillRepository;
 import com.dohung.orderfood.repository.OrderDetailRepository;
 import com.dohung.orderfood.repository.OrderRepository;
 import com.dohung.orderfood.repository.OrderStatusRepository;
+import com.dohung.orderfood.web.rest.request.ObjectReportRequestModel;
 import com.dohung.orderfood.web.rest.request.OrderRequestModel;
 import com.dohung.orderfood.web.rest.response.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.persistence.Tuple;
+import org.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/api")
@@ -45,6 +54,45 @@ public class OrderController {
 
     @Autowired
     private BillRepository billRepository;
+
+    // get all
+    @GetMapping("/order/accessToken")
+    public ResponseEntity getAccessToken() {
+        //lấy ra accessToken với real master (admin)
+        String accessToken = MethodCommon.getAccessToken();
+
+        MultiValueMap<String, Object> postParameters = new LinkedMultiValueMap<>();
+        String url = "http://localhost:8080/auth/realms/orderfood/protocol/openid-connect/token";
+        postParameters.add("client_id", "orderfoodservice");
+        postParameters.add("client_secret", "c782ec20-4cdf-4797-bcb6-4d6b211962ef");
+        postParameters.add("grant_type", "password");
+        //        postParameters.add("scope", "read");
+        postParameters.add("username", "hungdx");
+        postParameters.add("password", "12369874");
+
+        HttpHeaders headers = new HttpHeaders();
+        //        headers.add("Content-Type", "application/x-www-form-urlencoded");
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(
+            "Authorization",
+            "Bearer " +
+            "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ2TG8tbExmQWhrejVmREFzdldxZ3dnSGNTYmxfd0xNZlZxMlRyd2JEcXM4In0.eyJleHAiOjE2MzA5NTUzNzgsImlhdCI6MTYzMDkxOTM3OCwianRpIjoiZWUzYzk2Y2EtYTRkZS00Njg2LThhN2EtNDdlZGI4ZTM0Njk4IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL2F1dGgvcmVhbG1zL29yZGVyZm9vZCIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJhM2JhY2M4Mi01MWFlLTRkOGItOTQyOS1iODQyZjczOGUyMzIiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJvcmRlcmZvb2RzZXJ2aWNlIiwic2Vzc2lvbl9zdGF0ZSI6Ijk3MGQzOTRkLWY2ZWMtNDhkZi04NjA1LWQ2ODU1ZTdlZGE4OCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDozMDAwIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsImFkbWluIiwidW1hX2F1dGhvcml6YXRpb24iLCJSZWFsbUFkbWluIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkRvIEh1bmciLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJodW5nZHgiLCJnaXZlbl9uYW1lIjoiRG8iLCJmYW1pbHlfbmFtZSI6Ikh1bmciLCJlbWFpbCI6ImRvaHVuZzEyMzY5ODc0QGdtYWlsLmNvbSJ9.n9YpFW66nb-XFxVBc4Ok1taf9Ef4Tt9COvWWOCPARNXBMfhJmRDeCz_tmDE5yno3V9mm_Agsqu88BsTKfjoAp9iYli6SEjWbBVwGWTRE6sVFv9UI07E3ylo90_775LFcURvUgsICw5RL4Y5OsOu15YCx41dY7orGTuUrS8Y_rWxsl8Myg3hsTMFrfQHQXIH1Ay91Q_PaDGkxf2J4JVEmaAB_vkLyP8Rg534jOhCR0EQn_aK5a3gEenCAmT-nOu91VD4bPg6x_s7efiTLi2U-cAIcBuPiVRsFqO_jsXsaXcw3ShRbEnD9crFoql21mt9RuOKVSssxsk6Bj2lCudpO-w"
+        );
+
+        HttpEntity<MultiValueMap<String, Object>> r = new HttpEntity<>(postParameters, headers);
+
+        RestTemplate restTemplate = new RestTemplate();
+        String responseMessage = restTemplate.postForObject(url, r, String.class);
+
+        System.out.println("responseMessage: " + responseMessage); //access_token
+
+        JSONObject jsonObject = new JSONObject(responseMessage);
+
+        accessToken = (String) jsonObject.get("access_token");
+        System.out.println("access_token: " + accessToken);
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, ""), HttpStatus.OK);
+    }
 
     // get all
     @GetMapping("/order/allYear")
@@ -151,7 +199,7 @@ public class OrderController {
     //save - đặt hàng thông qua giỏ hàng
     @PostMapping("/order")
     @Transactional
-    public ResponseEntity save(@RequestBody OrderRequestModel orderRequestModel) {
+    public ResponseEntity save(@RequestBody OrderRequestModel orderRequestModel) throws JsonProcessingException {
         //        System.out.println(orderRequestModel.getDateOrder());
         //        SimpleDateFormat sdf1 = new SimpleDateFormat();
         //        sdf1.applyPattern("dd/MM/yyyy HH:mm:ss.SS");
@@ -198,6 +246,7 @@ public class OrderController {
 
         List<ObjectOrderDetail> list = orderRequestModel.getOrderDetails();
         List<OrderDetailResponseDto> listOrderDetail = new ArrayList<>();
+        //        List<OrderDetail> listOrderDetailRest = new ArrayList<>();
         for (ObjectOrderDetail item : list) {
             OrderDetailResponseDto orderDetailReturn = new OrderDetailResponseDto();
 
@@ -212,6 +261,7 @@ public class OrderController {
             orderDetailParam.setLastModifiedDate(LocalDateTime.now());
 
             OrderDetail orderDetailRest = orderDetailRepository.save(orderDetailParam);
+            //            listOrderDetailRest.add(orderDetailRest);
             BeanUtils.copyProperties(orderDetailRest, orderDetailReturn);
 
             listOrderDetail.add(orderDetailReturn);
@@ -235,6 +285,52 @@ public class OrderController {
         }
 
         orderReturn.setOrderDetails(listOrderDetail);
+
+        //create report
+        OrderReport orderReport = new OrderReport();
+        orderReport.setId(orderRest.getId());
+        orderReport.setUsername(orderRest.getUsername());
+        orderReport.setPhone(orderRest.getPhone());
+        orderReport.setAddress(orderRest.getAddress());
+        orderReport.setDateOrder(orderRest.getDateOrder());
+        orderReport.setNote(orderRest.getNote());
+
+        // lấy ra danh sách orderDetail theo orderId
+        List<Tuple> orderDetails = orderDetailRepository.getAllOrderDetailByOrderId(orderId);
+        //convert sang orderDetail
+        List<OrderDetailReport> listOrderDetailResult = orderDetails
+            .stream()
+            .map(
+                x ->
+                    new OrderDetailReport(
+                        x.get(0, Integer.class),
+                        x.get(1, String.class),
+                        x.get(2, Integer.class),
+                        x.get(3, Integer.class),
+                        x.get(4, BigDecimal.class)
+                    )
+            )
+            .collect(Collectors.toList());
+
+        List<OrderDetailReport> listOrderDetailReport = listOrderDetailResult
+            .stream()
+            .map(x -> new OrderDetailReport(x.getId(), x.getName(), x.getAmount(), x.getPercent(), x.getMoney()))
+            .collect(Collectors.toList());
+
+        ObjectReportRequestModel objectReportRequestModel = new ObjectReportRequestModel(orderReport, listOrderDetailReport, totalMoney);
+
+        RestTemplate restTemplate = new RestTemplate(); // dùng restemplate để call api
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        String reportObject = objectMapper.writeValueAsString(objectReportRequestModel); //convert
+        HttpEntity<String> entity = new HttpEntity<String>(reportObject, headers);
+
+        String objectURLUserHasRoleAdmin = StringConstant.URL_API_REPORT + "/report/api/create";
+        ResponseEntity<String> response = restTemplate.exchange(objectURLUserHasRoleAdmin, HttpMethod.POST, entity, String.class);
+        System.out.println("response: " + response);
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, orderReturn), HttpStatus.OK);
     }

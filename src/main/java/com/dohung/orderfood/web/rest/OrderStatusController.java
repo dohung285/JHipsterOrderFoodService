@@ -6,13 +6,12 @@ import com.dohung.orderfood.constant.StringConstant;
 import com.dohung.orderfood.domain.Order;
 import com.dohung.orderfood.domain.OrderStatus;
 import com.dohung.orderfood.exception.ErrorException;
+import com.dohung.orderfood.repository.OrderDetailRepository;
 import com.dohung.orderfood.repository.OrderRepository;
 import com.dohung.orderfood.repository.OrderStatusRepository;
 import com.dohung.orderfood.web.rest.request.OderStatusRequestModel;
-import com.dohung.orderfood.web.rest.response.ObjectOrderStatusResponseDto;
-import com.dohung.orderfood.web.rest.response.ObjectOrderStatusWithDateOrderRespone;
-import com.dohung.orderfood.web.rest.response.ObjectOrderTrackingReponse;
-import com.dohung.orderfood.web.rest.response.OrderStatusResponseDto;
+import com.dohung.orderfood.web.rest.response.*;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,10 +40,45 @@ public class OrderStatusController {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+
     // get all
     @GetMapping("/orderStatus")
     public ResponseEntity getAll() {
         List<ObjectOrderStatusResponseDto> listReturn = orderStatusRepository.getAll();
+
+        List<Tuple> listChild = orderDetailRepository.getAllOrderDetail();
+        System.out.println("listChild: " + listChild);
+
+        List<ObjectChildOrderDetailResponse> listChildResult = listChild
+            .stream()
+            .map(
+                x ->
+                    new ObjectChildOrderDetailResponse(
+                        x.get(0, Integer.class),
+                        x.get(1, Integer.class),
+                        x.get(2, String.class),
+                        x.get(3, Integer.class),
+                        x.get(4, BigDecimal.class),
+                        x.get(5, String.class)
+                    )
+            )
+            .collect(Collectors.toList());
+
+        for (ObjectOrderStatusResponseDto x : listReturn) {
+            Integer orderId = x.getId();
+            List<ObjectChildOrderDetailResponse> listChildX = listChildResult
+                .stream()
+                .filter(item -> item.getOrderId() == orderId)
+                .collect(Collectors.toList());
+            System.out.println("listChildX: " + listChildX);
+
+            if (listChildX.size() > 0) {
+                x.setListChild(listChildX);
+            }
+        }
+
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
     }
 
@@ -233,6 +267,18 @@ public class OrderStatusController {
         Integer statusParam = orderStatusRequestModel.getStatus();
         OrderStatus orderStatusParam = optionalOrderStatus.get();
         //        orderStatusParam.setOrderId(orderStatusRequestModel.getOrderId());
+
+        Integer currentStatus = orderStatusParam.getStatus();
+        if (orderStatusRequestModel.getStatus() < currentStatus) {
+            System.out.println(
+                "Trang thái đơn hàng không hợp lệ, trạng thái hiện tại là: " +
+                currentStatus +
+                " trạng thái truyền vào là: " +
+                orderStatusRequestModel.getStatus()
+            );
+            throw new ErrorException("Trạng thái không hợp lệ!");
+        }
+
         orderStatusParam.setStatus(orderStatusRequestModel.getStatus());
         orderStatusParam.setCreatedBy("api");
         orderStatusParam.setLastModifiedDate(LocalDateTime.now());

@@ -13,11 +13,18 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DiscountRepository extends JpaRepository<Discount, Integer> {
-    List<Discount> findAll();
+    List<Discount> findByIsDeletedEquals(Integer isDelete);
 
     Optional<Discount> findAllById(Integer id);
 
     List<Discount> findAllByStartDateIsBeforeAndEndDateIsBefore(Date startDate, Date endDate);
+
+    List<Discount> findByStartDateEqualsAndEndDateEqualsAndIsDeletedEqualsAndNameEquals(
+        Date startDate,
+        Date endDate,
+        Integer isDeleted,
+        String name
+    );
 
     //    @Query(value = " update food f left join discount d on f.discount_id = d.id   set f.discount_id = null where  d.end_date = curdate() ", nativeQuery = true)
     //    Tuple updateFood();
@@ -28,4 +35,8 @@ public interface DiscountRepository extends JpaRepository<Discount, Integer> {
     List<Discount> findAllByEndDate(Date date);
 
     List<Discount> findAllByEndDateGreaterThanEqual(Date date);
+
+    //    List<Discount> findByIsDeletedEqualAndEndDateGreaterThanEqual(Date parse, Integer isDeleted);
+
+    List<Discount> findByIsDeletedEqualsAndEndDateGreaterThanEqual(Integer isDeleted, Date parse);
 }

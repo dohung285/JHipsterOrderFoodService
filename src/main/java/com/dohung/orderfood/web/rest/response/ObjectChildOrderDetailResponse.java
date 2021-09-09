@@ -1,43 +1,32 @@
 package com.dohung.orderfood.web.rest.response;
 
 import java.math.BigDecimal;
-import java.util.List;
 
-public class ObjectOrderDetailOfUserResponseDto {
+public class ObjectChildOrderDetailResponse {
 
     private Integer orderId;
     private Integer foodId;
     private String foodName;
     private Integer amount;
-    private BigDecimal money;
-    private String pathImage;
+    private BigDecimal price;
+    private String image;
 
-    private List<ObjectOrderDetailOfUserResponseDto> listObjectOrderDetailOfUserResponseDto;
+    public ObjectChildOrderDetailResponse() {}
 
-    public ObjectOrderDetailOfUserResponseDto() {}
-
-    public ObjectOrderDetailOfUserResponseDto(
+    public ObjectChildOrderDetailResponse(
         Integer orderId,
         Integer foodId,
         String foodName,
         Integer amount,
-        BigDecimal money,
-        String pathImage
+        BigDecimal price,
+        String image
     ) {
         this.orderId = orderId;
         this.foodId = foodId;
         this.foodName = foodName;
         this.amount = amount;
-        this.money = money;
-        this.pathImage = pathImage;
-    }
-
-    public List<ObjectOrderDetailOfUserResponseDto> getListObjectOrderDetailOfUserResponseDto() {
-        return listObjectOrderDetailOfUserResponseDto;
-    }
-
-    public void setListObjectOrderDetailOfUserResponseDto(List<ObjectOrderDetailOfUserResponseDto> listObjectOrderDetailOfUserResponseDto) {
-        this.listObjectOrderDetailOfUserResponseDto = listObjectOrderDetailOfUserResponseDto;
+        this.price = price;
+        this.image = image;
     }
 
     public Integer getOrderId() {
@@ -72,26 +61,26 @@ public class ObjectOrderDetailOfUserResponseDto {
         this.amount = amount;
     }
 
-    public BigDecimal getMoney() {
-        return money;
+    public BigDecimal getPrice() {
+        return price;
     }
 
-    public void setMoney(BigDecimal money) {
-        this.money = money;
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
-    public String getPathImage() {
-        return pathImage;
+    public String getImage() {
+        return image;
     }
 
-    public void setPathImage(String pathImage) {
-        this.pathImage = pathImage;
+    public void setImage(String image) {
+        this.image = image;
     }
 
     @Override
     public String toString() {
         return (
-            "ObjectOrderDetailOfUserResponseDto{" +
+            "ObjectChildOrderDetailResponse{" +
             "orderId=" +
             orderId +
             ", foodId=" +
@@ -101,10 +90,10 @@ public class ObjectOrderDetailOfUserResponseDto {
             '\'' +
             ", amount=" +
             amount +
-            ", money=" +
-            money +
-            ", pathImage='" +
-            pathImage +
+            ", price=" +
+            price +
+            ", image='" +
+            image +
             '\'' +
             '}'
         );

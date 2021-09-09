@@ -8,6 +8,7 @@ import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.BillRepository;
 import com.dohung.orderfood.repository.FoodRepository;
 import com.dohung.orderfood.web.rest.response.*;
+import io.swagger.models.auth.In;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -195,7 +196,13 @@ public class ReportController {
         if (listResultFoodAPI.size() > 0) {
             for (Food x : listResultFoodAPI) {
                 listReturn.add(
-                    new ReportTotalObjectResponseDto(x.getId(), x.getName(), new BigInteger(String.valueOf(month)), new BigDecimal("0"))
+                    new ReportTotalObjectResponseDto(
+                        x.getId(),
+                        x.getName(),
+                        new BigInteger(String.valueOf(month)),
+                        new BigDecimal("0"),
+                        x.getIsDeleted()
+                    )
                 );
             }
             System.out.println("listReturn: " + listReturn);
@@ -211,7 +218,8 @@ public class ReportController {
                         x.get(0, Integer.class),
                         x.get(1, String.class),
                         x.get(2, BigInteger.class),
-                        x.get(3, BigDecimal.class)
+                        x.get(3, BigDecimal.class),
+                        x.get(4, Integer.class)
                     )
             )
             .collect(Collectors.toList());

@@ -2,6 +2,7 @@ package com.dohung.orderfood.web.rest.response;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 public class ObjectOrderStatusResponseDto {
 
@@ -18,6 +19,8 @@ public class ObjectOrderStatusResponseDto {
     private String note;
 
     private Integer status;
+
+    private List<ObjectChildOrderDetailResponse> listChild;
 
     public ObjectOrderStatusResponseDto() {}
 
@@ -37,6 +40,14 @@ public class ObjectOrderStatusResponseDto {
         this.dateOrder = dateOrder;
         this.note = note;
         this.status = status;
+    }
+
+    public List<ObjectChildOrderDetailResponse> getListChild() {
+        return listChild;
+    }
+
+    public void setListChild(List<ObjectChildOrderDetailResponse> listChild) {
+        this.listChild = listChild;
     }
 
     public Integer getId() {

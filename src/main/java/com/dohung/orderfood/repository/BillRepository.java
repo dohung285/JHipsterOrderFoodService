@@ -25,7 +25,7 @@ public interface BillRepository extends JpaRepository<Bill, Integer> {
         "		f.id," +
         "       f.name,	" +
         "	    MONTH(o.date_order) as month, 	" +
-        "		SUM(b.total_money) as total												" +
+        "		SUM(b.total_money) as total		, f.is_deleted										" +
         "	FROM bill b JOIN order_food o ON b.order_id = o.id left join order_food_detail od on od.order_id = o.id left join food f on f.id = od.food_id			" +
         "	WHERE 													" +
         "	    YEAR(o.date_order) = :year and month(o.date_order) = :month        " +

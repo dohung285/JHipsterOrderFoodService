@@ -1,6 +1,7 @@
 package com.dohung.orderfood.web.rest.response;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 public class FoodByCatalogResponseDto {
@@ -10,6 +11,7 @@ public class FoodByCatalogResponseDto {
     private BigDecimal price;
     private String description;
     private Integer percent;
+    private Integer isDeleted;
     private String path;
 
     private List<String> listImage;
@@ -25,7 +27,31 @@ public class FoodByCatalogResponseDto {
         this.path = path;
     }
 
-    public <X>FoodByCatalogResponseDto(X x, X x1, X x2, X x3, X x4) {}
+    public FoodByCatalogResponseDto(
+        Integer id,
+        String name,
+        BigDecimal price,
+        String description,
+        Integer percent,
+        Integer isDeleted,
+        String path
+    ) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.description = description;
+        this.percent = percent;
+        this.isDeleted = isDeleted;
+        this.path = path;
+    }
+
+    public Integer getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Integer isDeleted) {
+        this.isDeleted = isDeleted;
+    }
 
     public Integer getId() {
         return id;

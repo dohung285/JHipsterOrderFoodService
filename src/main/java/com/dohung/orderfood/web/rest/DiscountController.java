@@ -7,6 +7,7 @@ import com.dohung.orderfood.domain.Discount;
 import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.DiscountRepository;
 import com.dohung.orderfood.web.rest.request.DiscountRequestModel;
+import com.dohung.orderfood.web.rest.request.UpdateDiscountRequestModel;
 import com.dohung.orderfood.web.rest.response.DiscountObjectResponseDto;
 import com.dohung.orderfood.web.rest.response.DiscountResponseDto;
 import java.text.ParseException;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,10 +35,10 @@ public class DiscountController {
 
     @GetMapping("/discounts")
     public ResponseEntity getAllDiscounts() {
-        Date currentDate = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String strDate = sdf.format(currentDate);
-        System.out.println("strDate: " + strDate);
+        //        Date currentDate = new Date();
+        //        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        //        String strDate = sdf.format(currentDate);
+        //        System.out.println("strDate: " + strDate);
 
         List<Discount> listReturn = discountRepository.findAll();
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, listReturn), HttpStatus.OK);
@@ -51,7 +53,10 @@ public class DiscountController {
         System.out.println("strDate: " + strDate);
 
         List<DiscountObjectResponseDto> listReturn = new ArrayList<>();
-        List<Discount> listResult = discountRepository.findAllByEndDateGreaterThanEqual(new SimpleDateFormat("yyyy-MM-dd").parse(strDate));
+        List<Discount> listResult = discountRepository.findByIsDeletedEqualsAndEndDateGreaterThanEqual(
+            0,
+            new SimpleDateFormat("yyyy-MM-dd").parse(strDate)
+        );
         for (Discount x : listResult) {
             Integer id = x.getId();
             String nameAndPercent = x.getName() + "-" + x.getPercent() + "%";
@@ -69,12 +74,32 @@ public class DiscountController {
     public ResponseEntity saveDiscount(@RequestBody DiscountRequestModel discountRequestModel) {
         DiscountResponseDto discountReturn = new DiscountResponseDto();
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        List<Discount> checkExist = discountRepository.findByStartDateEqualsAndEndDateEqualsAndIsDeletedEqualsAndNameEquals(
+            discountRequestModel.getStartDate(),
+            discountRequestModel.getEndDate(),
+            0,
+            discountRequestModel.getName()
+        );
+        if (checkExist.size() > 0) {
+            throw new ErrorException(
+                "Đã tồn tại đợt giảm giá  trong khoảng thời gian startDate: =" +
+                sdf.format(discountRequestModel.getStartDate()) +
+                " và " +
+                sdf.format(discountRequestModel.getEndDate()) +
+                " tên: " +
+                discountRequestModel.getName()
+            );
+        }
+
         Discount discountParam = new Discount();
 
         discountParam.setName(discountRequestModel.getName());
         discountParam.setPercent(discountRequestModel.getPercent());
         discountParam.setStartDate(discountRequestModel.getStartDate());
         discountParam.setEndDate(discountRequestModel.getEndDate());
+        discountParam.setIsDeleted(0);
         discountParam.setCreatedBy("api");
         discountParam.setCreatedDate(LocalDateTime.now());
 
@@ -82,21 +107,41 @@ public class DiscountController {
 
         BeanUtils.copyProperties(discountRest, discountReturn);
 
-        //        List<Discount> checkExist = discountRepository.findAllByStartDateIsBeforeAndEndDateIsBefore(
-        //            discountRequestModel.getStartDate(),
-        //            discountRequestModel.getEndDate()
-        //        );
-        //        if (checkExist.size() <= 0) {
-        //
-        //        } else {
-        //            throw new ErrorException(
-        //                "Đã tồn tại đợt giảm giá  trong khoảng thời gian startDate: =" +
-        //                discountRequestModel.getStartDate() +
-        //                " và " +
-        //                discountRequestModel.getEndDate()
-        //            );
-        //        }
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, discountReturn), HttpStatus.OK);
+    }
+
+    //(delete ) update is_deleted
+    @PutMapping("/discount/{discountId}")
+    @Transactional
+    public ResponseEntity updateIsDeletedDiscount(@PathVariable("discountId") Integer discountId) {
+        Optional<Discount> optionalDiscount = discountRepository.findById(discountId);
+        if (!optionalDiscount.isPresent()) {
+            throw new ErrorException("Không tìm thấy Discount với discountId:= " + discountId);
+        }
+        Discount discountRest = optionalDiscount.get();
+        discountRest.setIsDeleted(1);
+
+        discountRepository.save(discountRest);
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "sucessful"), HttpStatus.OK);
+    }
+
+    //(delete ) update name and percent
+    @PutMapping("/discount/percentAndName/{discountId}")
+    @Transactional
+    public ResponseEntity updatePercentAndName(
+        @PathVariable("discountId") Integer discountId,
+        @RequestBody UpdateDiscountRequestModel updateDiscountRequestModel
+    ) {
+        Optional<Discount> optionalDiscount = discountRepository.findById(discountId);
+        if (!optionalDiscount.isPresent()) {
+            throw new ErrorException("Không tìm thấy Discount với discountId:= " + discountId);
+        }
+        Discount discountRest = optionalDiscount.get();
+        discountRest.setPercent(updateDiscountRequestModel.getPercent());
+        discountRest.setName(updateDiscountRequestModel.getName());
+
+        discountRepository.save(discountRest);
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "sucessful"), HttpStatus.OK);
     }
 
     //delete

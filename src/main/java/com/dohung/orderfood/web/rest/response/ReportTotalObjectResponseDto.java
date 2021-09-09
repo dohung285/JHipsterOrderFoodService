@@ -9,14 +9,31 @@ public class ReportTotalObjectResponseDto {
     private String name;
     private BigInteger month;
     private BigDecimal total;
+    private Integer isDeleted;
 
     public ReportTotalObjectResponseDto() {}
+
+    public ReportTotalObjectResponseDto(Integer id, String name, BigInteger month, BigDecimal total, Integer isDeleted) {
+        this.id = id;
+        this.name = name;
+        this.month = month;
+        this.total = total;
+        this.isDeleted = isDeleted;
+    }
 
     public ReportTotalObjectResponseDto(Integer id, String name, BigInteger month, BigDecimal total) {
         this.id = id;
         this.name = name;
         this.month = month;
         this.total = total;
+    }
+
+    public Integer getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Integer isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public Integer getId() {

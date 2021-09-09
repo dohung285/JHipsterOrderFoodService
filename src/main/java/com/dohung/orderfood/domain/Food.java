@@ -42,7 +42,18 @@ public class Food {
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
 
+    @Column(name = "is_deleted")
+    private Integer isDeleted;
+
     public Food() {}
+
+    public Integer getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Integer isDeleted) {
+        this.isDeleted = isDeleted;
+    }
 
     public Integer getId() {
         return id;
