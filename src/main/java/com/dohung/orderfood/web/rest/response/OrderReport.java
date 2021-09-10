@@ -8,14 +8,14 @@ public class OrderReport {
     private String username;
     private String phone;
     private String address;
-    private Date dateOrder;
+    private String dateOrder;
     private String note;
 
     public OrderReport() {
         super();
     }
 
-    public OrderReport(Integer id, String username, String phone, String address, Date dateOrder, String note) {
+    public OrderReport(Integer id, String username, String phone, String address, String dateOrder, String note) {
         this.id = id;
         this.username = username;
         this.phone = phone;
@@ -64,11 +64,11 @@ public class OrderReport {
         this.address = address;
     }
 
-    public Date getDateOrder() {
+    public String getDateOrder() {
         return dateOrder;
     }
 
-    public void setDateOrder(Date dateOrder) {
+    public void setDateOrder(String dateOrder) {
         this.dateOrder = dateOrder;
     }
 

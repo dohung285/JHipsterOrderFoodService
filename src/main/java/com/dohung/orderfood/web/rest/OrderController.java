@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.persistence.Tuple;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -199,16 +201,10 @@ public class OrderController {
     //save - đặt hàng thông qua giỏ hàng
     @PostMapping("/order")
     @Transactional
-    public ResponseEntity save(@RequestBody OrderRequestModel orderRequestModel) throws JsonProcessingException {
-        //        System.out.println(orderRequestModel.getDateOrder());
-        //        SimpleDateFormat sdf1 = new SimpleDateFormat();
-        //        sdf1.applyPattern("dd/MM/yyyy HH:mm:ss.SS");
-        //        Date date = sdf1.parse(orderRequestModel.getDateOrder()+"");
-        //        String string=sdf1.format(date);
-        //        System.out.println("Current date in Date Format: " + string);
+    public ResponseEntity save(@RequestBody OrderRequestModel orderRequestModel) throws JsonProcessingException, ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
         OrderResponseDto orderReturn = new OrderResponseDto();
-
         Order orderParam = new Order();
 
         orderParam.setAddress(orderRequestModel.getAddress());
@@ -224,7 +220,7 @@ public class OrderController {
         Order orderRest = orderRepository.save(orderParam);
         BeanUtils.copyProperties(orderRest, orderReturn);
 
-        System.out.println("Timezone: " + java.util.TimeZone.getDefault());
+        System.out.println("Timezone: " + TimeZone.getDefault());
 
         Integer orderId = orderRest.getId();
         // thêm vào bảng order_status
@@ -254,6 +250,7 @@ public class OrderController {
 
             orderDetailParam.setId(new OrderIdentity(item.getFoodId(), orderId));
             orderDetailParam.setAmount(item.getAmount());
+            orderDetailParam.setPrice(item.getPrice());
             orderDetailParam.setMoney(item.getMoney());
 
             orderDetailParam.setCreatedBy("api");
@@ -287,12 +284,14 @@ public class OrderController {
         orderReturn.setOrderDetails(listOrderDetail);
 
         //create report
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
         OrderReport orderReport = new OrderReport();
         orderReport.setId(orderRest.getId());
         orderReport.setUsername(orderRest.getUsername());
         orderReport.setPhone(orderRest.getPhone());
         orderReport.setAddress(orderRest.getAddress());
-        orderReport.setDateOrder(orderRest.getDateOrder());
+        orderReport.setDateOrder(sdf.format(orderRest.getDateOrder()));
         orderReport.setNote(orderRest.getNote());
 
         // lấy ra danh sách orderDetail theo orderId
@@ -314,7 +313,9 @@ public class OrderController {
 
         List<OrderDetailReport> listOrderDetailReport = listOrderDetailResult
             .stream()
-            .map(x -> new OrderDetailReport(x.getId(), x.getName(), x.getAmount(), x.getPercent(), x.getMoney()))
+            .map(
+                x -> new OrderDetailReport(x.getId(), x.getName(), x.getAmount(), x.getPercent() == null ? 0 : x.getPercent(), x.getMoney())
+            )
             .collect(Collectors.toList());
 
         ObjectReportRequestModel objectReportRequestModel = new ObjectReportRequestModel(orderReport, listOrderDetailReport, totalMoney);

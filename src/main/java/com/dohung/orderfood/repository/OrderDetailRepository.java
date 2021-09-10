@@ -36,7 +36,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Intege
     List<Tuple> getAllOrderDetail();
 
     @Query(
-        value = "select  od.id.foodId, f.name, od.amount,d.percent, od.money FROM OrderDetail od left JOIN Food f ON od.id.foodId = f.id left JOIN Discount d on d.id = f.discountId where od.id.orderId = :orderId"
+        value = "select  od.id.foodId, f.name, od.amount,d.percent, f.price FROM OrderDetail od left JOIN Food f ON od.id.foodId = f.id left JOIN Discount d on d.id = f.discountId where od.id.orderId = :orderId"
     )
     List<Tuple> getAllOrderDetailByOrderId(@Param("orderId") Integer orderId);
 }

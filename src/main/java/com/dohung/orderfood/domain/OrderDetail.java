@@ -14,6 +14,9 @@ public class OrderDetail {
     @Column(name = "amount")
     private Integer amount;
 
+    @Column(name = "price")
+    private BigDecimal price;
+
     @Column(name = "money")
     private BigDecimal money;
 
@@ -30,6 +33,14 @@ public class OrderDetail {
     private LocalDateTime lastModifiedDate;
 
     public OrderDetail() {}
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
 
     public OrderIdentity getId() {
         return id;
@@ -95,6 +106,8 @@ public class OrderDetail {
             id +
             ", amount=" +
             amount +
+            ", price=" +
+            price +
             ", money=" +
             money +
             ", createdBy='" +
