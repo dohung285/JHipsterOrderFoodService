@@ -17,13 +17,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.persistence.Tuple;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/api")
@@ -34,6 +32,40 @@ public class ReportController {
 
     @Autowired
     private FoodRepository foodRepository;
+
+    @GetMapping("/report/{orderId}")
+    private ResponseEntity getReport(@PathVariable("orderId") Integer orderId) {
+        // call api
+        RestTemplate restTemplate = new RestTemplate(); // dùng restemplate để call api
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
+
+        String url = StringConstant.URL_API_REPORT + "/report/api/report/" + orderId;
+
+        ResponseEntity<String> answer = null;
+        try {
+            answer = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        } catch (Exception e) {
+            throw new ErrorException(e.getMessage());
+        }
+        System.out.println("answerGetReport: " + answer);
+        if (answer.getStatusCodeValue() == 200) {
+            JSONObject jsonObject = new JSONObject(answer.getBody());
+            JSONObject jsonObjectReturn = jsonObject.getJSONObject("object");
+
+            Integer id = jsonObjectReturn.getInt("id");
+            Integer orderIdReport = jsonObjectReturn.getInt("orderId");
+            String fileName = jsonObjectReturn.getString("name");
+            String pathReport = jsonObjectReturn.getString("path");
+
+            ObjectReportReturn objectReportReturn = new ObjectReportReturn(id, orderIdReport, fileName, pathReport);
+            return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, objectReportReturn), HttpStatus.OK);
+        } else {
+            return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, new ObjectReportReturn()), HttpStatus.OK);
+        }
+    }
 
     @GetMapping("/report/revenueOfYear")
     public ResponseEntity getTotalMoneyOfTwelve() {

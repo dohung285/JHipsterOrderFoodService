@@ -1,6 +1,5 @@
 package com.dohung.orderfood.web.rest;
 
-import com.dohung.orderfood.common.MethodCommon;
 import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
 import com.dohung.orderfood.domain.Order;
@@ -9,26 +8,25 @@ import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.OrderDetailRepository;
 import com.dohung.orderfood.repository.OrderRepository;
 import com.dohung.orderfood.repository.OrderStatusRepository;
+import com.dohung.orderfood.web.rest.request.ObjectGmailRequest;
 import com.dohung.orderfood.web.rest.request.OderStatusRequestModel;
 import com.dohung.orderfood.web.rest.response.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.persistence.Tuple;
+import org.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/api")
@@ -253,6 +251,8 @@ public class OrderStatusController {
     public ResponseEntity updateStatus(@PathVariable("id") Integer id, @RequestBody OderStatusRequestModel orderStatusRequestModel) {
         OrderStatusResponseDto orderStatusReturn = new OrderStatusResponseDto();
 
+        Integer orderId = orderStatusRequestModel.getOrderId();
+
         Optional<Order> orderOptional = orderRepository.findById(orderStatusRequestModel.getOrderId());
         if (!orderOptional.isPresent()) {
             throw new ErrorException("Không tìm thấy Order với id:= " + orderStatusRequestModel.getOrderId());
@@ -269,7 +269,7 @@ public class OrderStatusController {
         //        orderStatusParam.setOrderId(orderStatusRequestModel.getOrderId());
 
         Integer currentStatus = orderStatusParam.getStatus();
-        if (orderStatusRequestModel.getStatus() < currentStatus) {
+        if (orderStatusRequestModel.getStatus() <= currentStatus) {
             System.out.println(
                 "Trang thái đơn hàng không hợp lệ, trạng thái hiện tại là: " +
                 currentStatus +
@@ -283,17 +283,125 @@ public class OrderStatusController {
         orderStatusParam.setCreatedBy("api");
         orderStatusParam.setLastModifiedDate(LocalDateTime.now());
 
-        if (statusParam == 1) {
+        String textGmail = null;
+        if (statusParam == 1) { // đang giao hàng
             orderStatusParam.setDateProcessed(new Date());
-        } else if (statusParam == 2) {
+            textGmail =
+                "Cảm ơn bạn đã sử dụng dịch của chúng tôi! \n" +
+                "Đơn hàng với mã đơn là " +
+                orderId +
+                " đã được gửi tới đơn vị vận chuyển, xin vui lòng đợi đơn vị vận chuyển giao hàng đến bạn!\n" +
+                "Orderfood!";
+        } else if (statusParam == 2) { // giao thành công
             orderStatusParam.setDateDelivered(new Date());
+            textGmail =
+                "Cảm ơn bạn đã sử dụng dịch của chúng tôi! \n" +
+                "Đơn hàng với mã đơn là " +
+                orderId +
+                " đã được được đơn vị giao hàng đến bạn thành công!\n" +
+                "Xin vui lòng kiểm tra hàng cẩn thận và thanh toán số tiền theo hóa đơn đính kèm! \n" +
+                "Orderfood!";
         } else {
             orderStatusParam.setLastModifiedDate(LocalDateTime.now());
         }
 
-        OrderStatus orderStatusRest = orderStatusRepository.save(orderStatusParam);
-        BeanUtils.copyProperties(orderStatusRest, orderStatusReturn);
+        // gửi email thông báo đến khách hàng
+        if (statusParam == 1 || statusParam == 2) {
+            ObjectReportReturn report = getReport(orderId);
+            if (Objects.isNull(report)) {
+                throw new ErrorException("Object report không đủ thông tin: " + report.toString());
+            }
+
+            ObjectGmailRequest objectGmailRequest = new ObjectGmailRequest();
+            objectGmailRequest.setMailTo("doxuanhungvnhn@gmail.com");
+            objectGmailRequest.setSubject("Gửi hàng");
+            objectGmailRequest.setText(textGmail);
+            objectGmailRequest.setFileName(report.getName() + ".pdf");
+            try {
+                String answer = sendEmailWhenDeliveryOrder(objectGmailRequest, true);
+                System.out.println("answerMail->0k: " + answer);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                throw new ErrorException("Loi: " + e.getMessage());
+            }
+        }
+
+        OrderStatus orderStatusRest = null;
+        try {
+            orderStatusRest = orderStatusRepository.save(orderStatusParam);
+            BeanUtils.copyProperties(orderStatusRest, orderStatusReturn);
+        } catch (Exception e) {
+            throw new ErrorException("Lỗi: " + e.getMessage());
+        }
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, orderStatusReturn), HttpStatus.OK);
+    }
+
+    private ObjectReportReturn getReport(Integer orderId) {
+        // call api
+        RestTemplate restTemplate = new RestTemplate(); // dùng restemplate để call api
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
+
+        String url = StringConstant.URL_API_REPORT + "/report/api/report/" + orderId;
+
+        ResponseEntity<String> answer = null;
+        try {
+            answer = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        } catch (Exception e) {
+            throw new ErrorException(e.getMessage());
+        }
+        System.out.println("answerGetReport: " + answer);
+        if (answer.getStatusCodeValue() == 200) {
+            JSONObject jsonObject = new JSONObject(answer.getBody());
+            JSONObject jsonObjectReturn = jsonObject.getJSONObject("object");
+
+            Integer id = jsonObjectReturn.getInt("id");
+            Integer orderIdReport = jsonObjectReturn.getInt("orderId");
+            String fileName = jsonObjectReturn.getString("name");
+            String pathReport = jsonObjectReturn.getString("path");
+
+            ObjectReportReturn objectReportReturn = new ObjectReportReturn(id, orderIdReport, fileName, pathReport);
+            return objectReportReturn;
+        } else {
+            return new ObjectReportReturn();
+        }
+    }
+
+    private String sendEmailWhenDeliveryOrder(ObjectGmailRequest objectGmailRequest, boolean type) throws JsonProcessingException {
+        //type = true : gửi mail có attachment  || type = false : gửi mail ko có attachment
+        OrderStatus orderStatusRest = null;
+
+        // call api
+        RestTemplate restTemplate = new RestTemplate(); // dùng restemplate để call api
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        String gmailObject = objectMapper.writeValueAsString(objectGmailRequest); //convert
+        System.out.println("gmailObject: " + objectGmailRequest);
+
+        HttpEntity<String> entity = new HttpEntity<String>(gmailObject, headers);
+
+        String createObjectURL = null;
+        if (type) {
+            createObjectURL = StringConstant.URL_API_GMAIL + "/gmail/sendEmailwithAttachment";
+        } else {
+            createObjectURL = StringConstant.URL_API_GMAIL + "/gmail/sendEmail";
+        }
+
+        ResponseEntity<String> answer = null;
+        try {
+            answer = restTemplate.exchange(createObjectURL, HttpMethod.POST, entity, String.class);
+        } catch (Exception e) {
+            throw new ErrorException(e.getMessage());
+        }
+        System.out.println("answerMail: " + answer);
+
+        //end gửi mail
+        return "ok";
     }
 }
