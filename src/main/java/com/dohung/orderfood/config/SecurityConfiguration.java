@@ -81,6 +81,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.GET,"/services/orderfood/api/countStar/**").permitAll()
             .antMatchers(HttpMethod.GET,"/services/orderfood/api/comment/**").permitAll()
 
+            .antMatchers(HttpMethod.POST,"/services/orderfood/api/notification/data").permitAll()
+
 
             .antMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
 //            .antMatchers("/api/**").authenticated()

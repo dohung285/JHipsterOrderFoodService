@@ -10,6 +10,8 @@ public class StringConstant {
 
     public static final String URL_API_GMAIL = "http://localhost:8084";
 
+    public static final String URL_API_FCM = "http://localhost:8087";
+
     public static final String PUBLIC_URL_API = "http://localhost:8085";
 
     public static int iSUCCESS = 1000;
