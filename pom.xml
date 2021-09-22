@@ -106,12 +106,11 @@
     <dependencies>
 
 
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.google.firebase/firebase-admin &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.google.firebase</groupId>-->
-<!--            <artifactId>firebase-admin</artifactId>-->
-<!--            <version>8.0.1</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>6.8.1</version>
+        </dependency>
 
 
         <!-- https://mvnrepository.com/artifact/org.json/json -->

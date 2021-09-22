@@ -246,4 +246,7 @@ jhipster:
 ##  auth-server-url: http://localhost:8080/auth
 #  resource: orderfoodservice
 
-app: firebase-configuration-file = fir-cloud-message-a97bb-firebase-adminsdk-u83kw-d10f7599b7.json
+#app: firebase-configuration-file = fir-cloud-message-a97bb-firebase-adminsdk-u83kw-d10f7599b7.json
+
+#app:
+#  firebase-configuration-file=fir-cloud-message-a97bb-firebase-adminsdk-u83kw-d10f7599b7.json

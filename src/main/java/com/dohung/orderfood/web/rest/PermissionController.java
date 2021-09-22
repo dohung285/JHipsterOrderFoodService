@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -68,6 +69,15 @@ public class PermissionController {
             throw new ErrorException(" Không có quyền truy cập");
         }
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "Có quyền truy cập"), HttpStatus.OK);
+    }
+
+    @GetMapping("/permission/get-notification")
+    public ResponseEntity checkPermissionGetNotification(@RequestParam String username) {
+        Optional<UserPermission> optionalUserPermission = userPermissionRepository.checkPermissionGetNotification(username);
+        if (!optionalUserPermission.isPresent()) {
+            throw new ErrorException(" Không có quyền nhận thông báo");
+        }
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "Có quyền nhận thông báo"), HttpStatus.OK);
     }
 
     // get all
@@ -150,6 +160,7 @@ public class PermissionController {
     }
 
     @PostMapping("/permission")
+    @Transactional
     public ResponseEntity create(@RequestBody CreatePermissionRequestModel createPermissionRequestModel) throws Exception {
         System.out.println("currentPermission: " + createPermissionRequestModel.getCurrentPermission());
 
@@ -168,8 +179,36 @@ public class PermissionController {
                 userPermissionParam.setLastModifiedDate(LocalDateTime.now());
 
                 listParam.add(userPermissionParam);
+                //                if (x.equals("a8")){
+                //                    //Tìm xem trong list ActionId ở trên có cái nào là ||  (id,a8) - (functId, 7)  ===> chức năng ĐƠn hàng
+                //                    // check xem id = a8 có đúng là tồn tại trong bảng actionSystem ko? Sau đó check xem functId có đúng bằng  7 k?
+                //                    // Check xem cái functId = 7 trong bảng functionSystem có đúng là = 'Đơn hàng' ?
+                //                    // nếu đều đúng hết thì lưu vào bảng notification với username hiện tại ( mục đích của bảng này là để khi user đăng nhập xem có quyền nhập thông báo ko? -- Quản trị đơn hàng )
+                //                    Optional<ActionSystem> optionalActionSystem = actionSystemRepository.findById("a8");
+                //                    if (!optionalActionSystem.isPresent()){
+                //                        throw new ErrorException("Không tìm thấy ActionSystem với id = a8 ");
+                //                    }
+                //                    ActionSystem actionSystem = optionalActionSystem.get();
+                //                    Integer functId = actionSystem.getFunctId();
+                //
+                //                    Optional<FunctionSystem> optionalFunctionSystem = functionSystemRepository.findById(functId);
+                //                    if (!optionalFunctionSystem.isPresent()){
+                //                        throw new ErrorException("Không tìm thấy FunctionSystem với id = "+functId);
+                //                    }
+                //                    FunctionSystem functionSystem = optionalFunctionSystem.get();
+                //                    if (!functionSystem.getName().equals("Đơn hàng")){
+                //                        throw new ErrorException("FunctionSystem với id = "+functId + " không phải là Đơn hàng");
+                //                    }
+                //
+                //                    //save vào bảng Notification
+                //
+                //
+                //
+                //                }
+
             }
         }
+
         List<UserPermission> listReturn = userPermissionRepository.saveAll(listParam);
         if (listReturn.size() > 0) {
             ObjectMapper objectMapper = new ObjectMapper();

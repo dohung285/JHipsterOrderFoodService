@@ -30,4 +30,10 @@ public interface UserPermissionRepository extends JpaRepository<UserPermission, 
     Optional<UserPermission> checkUsernameIsRoot(@Param("username") String username);
 
     Optional<UserPermission> findByUsername(String username);
+
+    // phải có actionId = a8 và functId = 7 hoặc accountType = 0 ( UserPermission )
+    @Query(
+        " SELECT u.id FROM UserPermission u left join ActionSystem a  on u.actionId = a.id left join FunctionSystem f  on f.id = a.functId where  (u.username = :username and u.accountType = 0) or (u.username = :username and a.id = 'a8') "
+    )
+    Optional<UserPermission> checkPermissionGetNotification(@Param("username") String username);
 }
