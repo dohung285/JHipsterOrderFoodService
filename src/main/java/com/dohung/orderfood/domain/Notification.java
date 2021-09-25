@@ -14,6 +14,9 @@ public class Notification {
     @Column(name = "content")
     private String content;
 
+    @Column(name = "order_id")
+    private Integer orderId;
+
     @Column(name = "created_by")
     private String createdBy;
 
@@ -31,6 +34,7 @@ public class Notification {
     public Notification(
         Integer id,
         String content,
+        Integer orderId,
         String createdBy,
         LocalDateTime createdDate,
         String lastModifiedBy,
@@ -38,10 +42,19 @@ public class Notification {
     ) {
         this.id = id;
         this.content = content;
+        this.orderId = orderId;
         this.createdBy = createdBy;
         this.createdDate = createdDate;
         this.lastModifiedBy = lastModifiedBy;
         this.lastModifiedDate = lastModifiedDate;
+    }
+
+    public Integer getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Integer orderId) {
+        this.orderId = orderId;
     }
 
     public Integer getId() {
@@ -101,6 +114,8 @@ public class Notification {
             ", content='" +
             content +
             '\'' +
+            ", orderId=" +
+            orderId +
             ", createdBy='" +
             createdBy +
             '\'' +

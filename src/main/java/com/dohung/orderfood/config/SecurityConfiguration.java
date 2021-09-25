@@ -74,6 +74,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             .antMatchers(HttpMethod.GET,"/services/orderfood/api/menu/byNotRole").permitAll()
             .antMatchers(HttpMethod.GET,"/services/orderfood/api/menu/byWithRole").permitAll()
+            .antMatchers(HttpMethod.GET,"/services/orderfood/api/menu/item-monan").permitAll()
+
+
+
             .antMatchers(HttpMethod.GET,"/services/orderfood/api/food/byFoodGroup/**").permitAll()
             .antMatchers(HttpMethod.GET,"/services/orderfood/api/food/foodDetail/**").permitAll()
             .antMatchers(HttpMethod.GET,"/services/orderfood/api/food/search/**").permitAll()
@@ -83,6 +87,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             .antMatchers(HttpMethod.GET,"/services/orderfood/api/permission/get-notification/**").permitAll()
             .antMatchers(HttpMethod.POST,"/services/orderfood/api/notification/data").permitAll()
+
+            .antMatchers(HttpMethod.GET,"/services/orderfood/api/permission/checknew/**").permitAll()
 
             .antMatchers(HttpMethod.POST,"/api/sayHello").permitAll()
 

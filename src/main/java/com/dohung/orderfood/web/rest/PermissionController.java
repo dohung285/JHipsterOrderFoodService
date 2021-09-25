@@ -75,7 +75,8 @@ public class PermissionController {
     public ResponseEntity checkPermissionGetNotification(@RequestParam String username) {
         Optional<UserPermission> optionalUserPermission = userPermissionRepository.checkPermissionGetNotification(username);
         if (!optionalUserPermission.isPresent()) {
-            throw new ErrorException(" Không có quyền nhận thông báo");
+            //            throw new ErrorException(" Không có quyền nhận thông báo");
+            return new ResponseEntity(new ResponseData(StringConstant.iERROR_EXCEPTION, "Không có quyền nhận thông báo"), HttpStatus.OK);
         }
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "Có quyền nhận thông báo"), HttpStatus.OK);
     }
@@ -103,9 +104,18 @@ public class PermissionController {
             }
         }
 
-        System.out.println("objectTreePerList: " + objectTreePerList);
+        //        System.out.println("objectTreePerList: " + objectTreePerList);
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, objectTreePerList), HttpStatus.OK);
+    }
+
+    @GetMapping("/permission/checknew/{username}")
+    public ResponseEntity checkUserIsNew(@PathVariable("username") String username) {
+        Optional<PermissionCurrent> optionalPermissionCurrent = permissionCurrentRepository.findAllByUsername(username);
+        if (!optionalPermissionCurrent.isPresent()) {
+            return new ResponseEntity(new ResponseData(StringConstant.iERROR_EXCEPTION, "false"), HttpStatus.OK);
+        }
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "true"), HttpStatus.OK);
     }
 
     @GetMapping("/permission/function/{username}")
@@ -121,24 +131,18 @@ public class PermissionController {
 
         JSONObject jsonObject = new JSONObject(permissionCurrentRest.getCurrentPer().toString());
 
-        System.out.println("permissionCurrentRest.getCurrentPer(): " + permissionCurrentRest.getCurrentPer());
+        //        System.out.println("permissionCurrentRest.getCurrentPer(): " + permissionCurrentRest.getCurrentPer());
         List<Integer> functIds = new ArrayList<>();
         Iterator keys = jsonObject.keys();
         while (keys.hasNext()) {
-            // loop to get the dynamic key
             String currentFunctKey = (String) keys.next();
-            //            System.out.println("key: " + currentFunctKey);
-            //            System.out.println(NumberUtils.isCreatable(currentFunctKey));
             if (NumberUtils.isCreatable(currentFunctKey)) {
                 functIds.add(Integer.parseInt(currentFunctKey));
             }
         }
-        //        for (Integer x : functIds) {
-        //            System.out.println("x: " + x);
-        //        }
 
         List<FunctionSystem> listResult = functionSystemRepository.findByIdIn(functIds);
-        System.out.println("listResult: " + listResult);
+        //        System.out.println("listResult: " + listResult);
 
         List<String> listStringName = listResult.stream().flatMap(o -> Stream.of(o.getName())).collect(Collectors.toList());
 
@@ -152,9 +156,9 @@ public class PermissionController {
             throw new ErrorException("Không tìm thấy PermissionCurrent với username: = " + username);
         }
         PermissionCurrent permissionCurrentRest = optionalPermissionCurrent.get();
-        System.out.println("permissionCurrentRest.getCurrentPer(): " + permissionCurrentRest.getCurrentPer());
+        //        System.out.println("permissionCurrentRest.getCurrentPer(): " + permissionCurrentRest.getCurrentPer());
         JSONObject jsonObject = new JSONObject(permissionCurrentRest.getCurrentPer());
-        System.out.println("json" + jsonObject);
+        //        System.out.println("json" + jsonObject);
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, jsonObject.toString()), HttpStatus.OK);
     }
@@ -162,13 +166,13 @@ public class PermissionController {
     @PostMapping("/permission")
     @Transactional
     public ResponseEntity create(@RequestBody CreatePermissionRequestModel createPermissionRequestModel) throws Exception {
-        System.out.println("currentPermission: " + createPermissionRequestModel.getCurrentPermission());
+        //        System.out.println("currentPermission: " + createPermissionRequestModel.getCurrentPermission());
 
         List<UserPermission> listParam = new ArrayList<>();
         String username = createPermissionRequestModel.getUsername();
 
         for (String x : createPermissionRequestModel.getActionIds()) {
-            System.out.println("createPermissionRequestModel.getActionIds(): " + x);
+            //            System.out.println("createPermissionRequestModel.getActionIds(): " + x);
             if (!MethodCommon.isNumeric(x)) {
                 UserPermission userPermissionParam = new UserPermission();
                 userPermissionParam.setUsername(username);
@@ -215,7 +219,7 @@ public class PermissionController {
             Map<String, Object> map = createPermissionRequestModel.getCurrentPermission();
             String jsonObjectMapper = objectMapper.writeValueAsString(map);
 
-            System.out.println("jsonObjectMapper: " + jsonObjectMapper);
+            //            System.out.println("jsonObjectMapper: " + jsonObjectMapper);
 
             PermissionCurrent permissionCurrentParam = null;
             Optional<PermissionCurrent> optionalPermissionCurrent = permissionCurrentRepository.findAllByUsername(username);

@@ -9,12 +9,11 @@ import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
 import com.dohung.orderfood.domain.*;
 import com.dohung.orderfood.exception.ErrorException;
-import com.dohung.orderfood.repository.BillRepository;
-import com.dohung.orderfood.repository.OrderDetailRepository;
-import com.dohung.orderfood.repository.OrderRepository;
-import com.dohung.orderfood.repository.OrderStatusRepository;
+import com.dohung.orderfood.repository.*;
+import com.dohung.orderfood.service.PushNotificationService;
 import com.dohung.orderfood.web.rest.request.ObjectReportRequestModel;
 import com.dohung.orderfood.web.rest.request.OrderRequestModel;
+import com.dohung.orderfood.web.rest.request.PushNotificationRequest;
 import com.dohung.orderfood.web.rest.response.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,6 +55,15 @@ public class OrderController {
 
     @Autowired
     private BillRepository billRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    private PushNotificationService pushNotificationService;
+
+    public OrderController(PushNotificationService pushNotificationService) {
+        this.pushNotificationService = pushNotificationService;
+    }
 
     // get all
     @GetMapping("/order/accessToken")
@@ -333,6 +341,35 @@ public class OrderController {
         ResponseEntity<String> response = restTemplate.exchange(objectURLUserHasRoleAdmin, HttpMethod.POST, entity, String.class);
         System.out.println("response: " + response);
 
+        // gửi thông báo lên firebase
+        PushNotificationRequest request = new PushNotificationRequest();
+        request.setTitle("orderfood_system");
+        request.setMessage("Đơn hàng mới có mã đơn là orderId: " + orderId);
+        request.setTopic("a");
+        request.setToken(
+            "cT-UrDYHH97lXas8wG2i06:APA91bFpRw5LRgRAkg_so2kFuNW3q2cAXZ078nU9_cO6pqc3gARrN0kG8sVS4hTM2ZKXcxJumWKNbWMqGlQOBsjdB76CpTrOaQK00jv_sCkQSg9cCrdPDBUI-Mc0Pw89ljxwDbn2FWYz"
+        );
+        try {
+            pushNotificationService.sendPushNotification(request);
+        } catch (Exception e) {
+            throw new ErrorException("Lỗi pushNotificationFirebase: " + e.getMessage());
+        }
+        //Sau đó lưu nội dung thông báo vào db
+        Optional<Notification> optionalNotification = notificationRepository.findByOrderId(orderId);
+        if (optionalNotification.isPresent()) {
+            throw new ErrorException("Thông báo với đơn hàng có mã orderId= " + orderId + " đã tồn tại trong database");
+        } else {
+            Notification notification = new Notification();
+            notification.setOrderId(orderId);
+            notification.setContent("Đơn hàng mới có mã đơn là orderId: " + orderId);
+            notification.setCreatedBy("api");
+            notification.setCreatedDate(LocalDateTime.now());
+            notification.setLastModifiedDate(LocalDateTime.now());
+            Notification notificationRest = notificationRepository.save(notification);
+            if (Objects.isNull(notificationRest)) {
+                throw new ErrorException("Có lỗi xảy ra khi lưu notification");
+            }
+        }
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, orderReturn), HttpStatus.OK);
     }
 
