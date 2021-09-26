@@ -2,10 +2,11 @@ package com.dohung.orderfood.web.rest;
 
 import com.dohung.orderfood.common.ResponseData;
 import com.dohung.orderfood.constant.StringConstant;
-import com.dohung.orderfood.domain.Comment;
 import com.dohung.orderfood.domain.Discount;
+import com.dohung.orderfood.domain.Food;
 import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.DiscountRepository;
+import com.dohung.orderfood.repository.FoodRepository;
 import com.dohung.orderfood.web.rest.request.DiscountRequestModel;
 import com.dohung.orderfood.web.rest.request.UpdateDiscountRequestModel;
 import com.dohung.orderfood.web.rest.response.DiscountObjectResponseDto;
@@ -14,11 +15,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +30,20 @@ public class DiscountController {
     @Autowired
     private DiscountRepository discountRepository;
 
+    @Autowired
+    private FoodRepository foodRepository;
+
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+
+    @GetMapping("/discounts/{discountId}")
+    public ResponseEntity getAllDiscountByDiscountId(@PathVariable("discountId") Integer discountId) {
+        Optional<Discount> optionalDiscount = discountRepository.findByIdAndIsDeletedEquals(discountId, 0);
+        if (!optionalDiscount.isPresent()) {
+            throw new ErrorException("Không tìm thấy Discount với id: " + discountId);
+        }
+        Discount discountRest = optionalDiscount.get();
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, discountRest), HttpStatus.OK);
+    }
 
     @GetMapping("/discounts")
     public ResponseEntity getAllDiscounts() {
@@ -122,6 +134,17 @@ public class DiscountController {
         discountRest.setIsDeleted(1);
 
         discountRepository.save(discountRest);
+
+        //update discountId ở trong bảng Food
+
+        List<Food> foodRests = foodRepository.findAllByDiscountId(discountId);
+
+        //Lấy ra listFoodId
+        List<Integer> listFoodId = foodRests.stream().map(Food::getId).collect(Collectors.toList());
+
+        // update foods
+        foodRepository.updateDiscountIdOfFood(listFoodId);
+
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "sucessful"), HttpStatus.OK);
     }
 

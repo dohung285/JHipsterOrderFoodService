@@ -53,7 +53,7 @@ public class MenuController {
             )
             .collect(Collectors.toList());
 
-        System.out.println("listMenuMonAn: " + listMenuMonAn);
+        //        System.out.println("listMenuMonAn: " + listMenuMonAn);
 
         //lấy ra item parrent
 
@@ -198,7 +198,7 @@ public class MenuController {
 
         List<Menu> list = menuRepository.getAllMenuWithoutItemHeThongAndSubHeThong(); // loại bỏ item Hệ thống
 
-        System.out.println("list: " + list.toString());
+        //        System.out.println("list: " + list.toString());
 
         //lấy ra danh sách menu ở cấp 0
         List<Menu> listMenuLevel0 = list.stream().filter(x -> x.getLevel() == 0).collect(Collectors.toList());
@@ -207,11 +207,11 @@ public class MenuController {
         List<Menu> listMenuChildOfLevel0 = null;
         ObjectMenuParentDto objectMenuParentDto = null;
         for (Menu item : listMenuLevel0) {
-            System.out.println("item: " + item.toString());
+            //            System.out.println("item: " + item.toString());
             listMenuChildOfLevel0 = list.stream().filter(x -> x.getParentId() == item.getId()).collect(Collectors.toList());
 
-            System.out.println("listMenuChildOfLevel0: " + listMenuChildOfLevel0);
-            System.out.println("===================================");
+            //            System.out.println("listMenuChildOfLevel0: " + listMenuChildOfLevel0);
+            //            System.out.println("===================================");
 
             JSONObject jsonObject = new JSONObject();
             JSONArray arrayItems = new JSONArray();
@@ -256,7 +256,7 @@ public class MenuController {
 
         List<Menu> list = menuRepository.getAllMenuNotRole();
 
-        System.out.println("list: " + list.toString());
+        //        System.out.println("list: " + list.toString());
 
         //lấy ra danh sách menu ở cấp 0
         List<Menu> listMenuLevel0 = list.stream().filter(x -> x.getLevel() == 0).collect(Collectors.toList());
@@ -268,11 +268,11 @@ public class MenuController {
             if (item.getId() == 1) {
                 continue;
             }
-            System.out.println("item: " + item.toString());
+            //            System.out.println("item: " + item.toString());
             listMenuChildOfLevel0 = list.stream().filter(x -> x.getParentId() == item.getId()).collect(Collectors.toList());
 
-            System.out.println("listMenuChildOfLevel0: " + listMenuChildOfLevel0);
-            System.out.println("===================================");
+            //            System.out.println("listMenuChildOfLevel0: " + listMenuChildOfLevel0);
+            //            System.out.println("===================================");
 
             JSONObject jsonObject = new JSONObject();
             JSONArray arrayItems = new JSONArray();
@@ -370,7 +370,7 @@ public class MenuController {
 
         List<Menu> list = menuRepository.getAllMenuByRole(params);
 
-        System.out.println("list: " + list.toString());
+        //        System.out.println("list: " + list.toString());
 
         //lấy ra danh sách menu ở cấp 0
         List<Menu> listMenuLevel0 = list.stream().filter(x -> x.getLevel() == 0).collect(Collectors.toList());
@@ -379,11 +379,11 @@ public class MenuController {
         List<Menu> listMenuChildOfLevel0 = null;
         ObjectMenuParentDto objectMenuParentDto = null;
         for (Menu item : listMenuLevel0) {
-            System.out.println("item: " + item.toString());
+            //            System.out.println("item: " + item.toString());
             listMenuChildOfLevel0 = list.stream().filter(x -> x.getParentId() == item.getId()).collect(Collectors.toList());
 
-            System.out.println("listMenuChildOfLevel0: " + listMenuChildOfLevel0);
-            System.out.println("===================================");
+            //            System.out.println("listMenuChildOfLevel0: " + listMenuChildOfLevel0);
+            //            System.out.println("===================================");
 
             JSONObject jsonObject = new JSONObject();
             JSONArray arrayItems = new JSONArray();

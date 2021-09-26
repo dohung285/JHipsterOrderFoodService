@@ -80,11 +80,15 @@ public interface FoodRepository extends JpaRepository<Food, Integer> {
         "	    f.price ,	" +
         "	    f.description ,	" +
         "	    f.discountId ,	" +
+        "	    f.isDeleted ,	" +
+        "	    d.percent ,	" +
         "	    i.path 	" +
         "	FROM	" +
         "	    Food f	" +
         "	        LEFT OUTER JOIN	" +
         "	    Image i ON (f.imageId = i.id)	" +
+        "	        LEFT OUTER JOIN	" +
+        "	    Discount d ON (f.discountId = d.id)	" +
         "	WHERE	" +
         "	    f.groupId = :foodGroupId	" +
         "	        AND (f.name LIKE %:foodName%)  and f.isDeleted = 0	" +
@@ -102,4 +106,10 @@ public interface FoodRepository extends JpaRepository<Food, Integer> {
     Optional<Food> findAllByName(String name);
 
     List<Food> findAllByNameAndNameNot(String name, String currentName);
+
+    List<Food> findAllByDiscountId(Integer discountId);
+
+    @Modifying
+    @Query("update Food  set discountId=null where id in (:foodIds)")
+    void updateDiscountIdOfFood(@Param("foodIds") List<Integer> foodIds);
 }

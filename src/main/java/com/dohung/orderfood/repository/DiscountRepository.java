@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.persistence.Tuple;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -39,4 +40,12 @@ public interface DiscountRepository extends JpaRepository<Discount, Integer> {
     //    List<Discount> findByIsDeletedEqualAndEndDateGreaterThanEqual(Date parse, Integer isDeleted);
 
     List<Discount> findByIsDeletedEqualsAndEndDateGreaterThanEqual(Integer isDeleted, Date parse);
+
+    List<Discount> findAllByEndDateLessThanEqual(Date parse);
+
+    @Modifying
+    @Query(value = "update discount set is_deleted = 1 where id in (:discountIds)", nativeQuery = true)
+    void updateDiscountHasEndDateExpireDate(@Param("discountIds") List<Integer> discountIds);
+
+    Optional<Discount> findByIdAndIsDeletedEquals(Integer discountId, int i);
 }

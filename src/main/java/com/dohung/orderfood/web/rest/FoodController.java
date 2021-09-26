@@ -189,18 +189,19 @@ public class FoodController {
     ) {
         List<Tuple> listReturn = foodRepository.getAllByNameContainingAndGroupId(foodName, foodGroupId);
 
-        List<FoodByCatalogResponseDto> listResultCountAPI = listReturn
+        List<FoodSearchResponseDto> listResultCountAPI = listReturn
             .stream()
             .map(
                 x ->
-                    new FoodByCatalogResponseDto(
+                    new FoodSearchResponseDto(
                         x.get(0, Integer.class),
                         x.get(1, String.class),
                         x.get(2, BigDecimal.class),
                         x.get(3, String.class),
                         x.get(4, Integer.class),
                         x.get(5, Integer.class),
-                        x.get(6, String.class)
+                        x.get(6, Integer.class),
+                        x.get(7, String.class)
                     )
             )
             .collect(Collectors.toList());
