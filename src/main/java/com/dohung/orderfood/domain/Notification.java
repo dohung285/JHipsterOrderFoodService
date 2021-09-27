@@ -17,6 +17,9 @@ public class Notification {
     @Column(name = "order_id")
     private Integer orderId;
 
+    @Column(name = "is_deleted")
+    private Integer isDeleted;
+
     @Column(name = "created_by")
     private String createdBy;
 
@@ -35,6 +38,7 @@ public class Notification {
         Integer id,
         String content,
         Integer orderId,
+        Integer isDeleted,
         String createdBy,
         LocalDateTime createdDate,
         String lastModifiedBy,
@@ -43,10 +47,19 @@ public class Notification {
         this.id = id;
         this.content = content;
         this.orderId = orderId;
+        this.isDeleted = isDeleted;
         this.createdBy = createdBy;
         this.createdDate = createdDate;
         this.lastModifiedBy = lastModifiedBy;
         this.lastModifiedDate = lastModifiedDate;
+    }
+
+    public Integer getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Integer isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public Integer getOrderId() {
@@ -116,6 +129,8 @@ public class Notification {
             '\'' +
             ", orderId=" +
             orderId +
+            ", isDeleted=" +
+            isDeleted +
             ", createdBy='" +
             createdBy +
             '\'' +

@@ -5,7 +5,9 @@ import com.dohung.orderfood.constant.StringConstant;
 import com.dohung.orderfood.domain.NumberNotification;
 import com.dohung.orderfood.exception.ErrorException;
 import com.dohung.orderfood.repository.NumberNotificationRepository;
+import com.dohung.orderfood.web.rest.response.NumberNotificationResponse;
 import java.util.Optional;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +30,9 @@ public class NumberNotificationController {
             throw new ErrorException("Không tìm thấy NumberNotification với id = 1");
         }
         NumberNotification numberNotification = optionalNumberNotification.get();
-        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, numberNotification.getNumber()), HttpStatus.OK);
+
+        NumberNotificationResponse numberNotificationResponse = new NumberNotificationResponse(numberNotification.getNumber());
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, numberNotificationResponse), HttpStatus.OK);
     }
 
     @PutMapping("/notification/number/increment")

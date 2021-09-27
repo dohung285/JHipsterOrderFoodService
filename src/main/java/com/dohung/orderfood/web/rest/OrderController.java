@@ -363,6 +363,7 @@ public class OrderController {
             notification.setOrderId(orderId);
             notification.setContent("Đơn hàng mới có mã đơn là orderId: " + orderId);
             notification.setCreatedBy("api");
+            notification.setIsDeleted(0);
             notification.setCreatedDate(LocalDateTime.now());
             notification.setLastModifiedDate(LocalDateTime.now());
             Notification notificationRest = notificationRepository.save(notification);
