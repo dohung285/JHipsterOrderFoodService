@@ -90,7 +90,8 @@ public class PermissionController {
             .map(o -> new ObjectTreePer(o.getId(), o.getName()))
             .collect(Collectors.toList());
 
-        List<ActionSystem> actionSystemList = actionSystemRepository.findAll();
+        //        List<ActionSystem> actionSystemList = actionSystemRepository.findAll();
+        List<ActionSystem> actionSystemList = actionSystemRepository.getAllIgnoreCaseActionIsParent();
         //        List<ObjectChildrenTree> objectChildrenTreeList = actionSystemList.stream().map(o -> new ObjectChildrenTree(o.getId(),o.getName())).collect(Collectors.toList());
 
         for (ObjectTreePer itemParent : objectTreePerList) {
@@ -168,52 +169,58 @@ public class PermissionController {
     public ResponseEntity create(@RequestBody CreatePermissionRequestModel createPermissionRequestModel) throws Exception {
         //        System.out.println("currentPermission: " + createPermissionRequestModel.getCurrentPermission());
 
-        List<UserPermission> listParam = new ArrayList<>();
+        if (createPermissionRequestModel.getActionIds().isEmpty()) {
+            throw new ErrorException("Phải chọn chức năng cho user!!");
+        }
+
+        List<UserPermission> listParamAdd = new ArrayList<>();
+        List<UserPermission> listParamEdit = new ArrayList<>();
         String username = createPermissionRequestModel.getUsername();
+
+        //xóa đi các UserPermission hiện tại của username
+        userPermissionRepository.deleteByUsername(username);
 
         for (String x : createPermissionRequestModel.getActionIds()) {
             //            System.out.println("createPermissionRequestModel.getActionIds(): " + x);
-            if (!MethodCommon.isNumeric(x)) {
-                UserPermission userPermissionParam = new UserPermission();
-                userPermissionParam.setUsername(username);
-                userPermissionParam.setActionId(x);
 
-                userPermissionParam.setCreatedBy("api");
-                userPermissionParam.setCreatedDate(LocalDateTime.now());
-                userPermissionParam.setLastModifiedDate(LocalDateTime.now());
-
-                listParam.add(userPermissionParam);
-                //                if (x.equals("a8")){
-                //                    //Tìm xem trong list ActionId ở trên có cái nào là ||  (id,a8) - (functId, 7)  ===> chức năng ĐƠn hàng
-                //                    // check xem id = a8 có đúng là tồn tại trong bảng actionSystem ko? Sau đó check xem functId có đúng bằng  7 k?
-                //                    // Check xem cái functId = 7 trong bảng functionSystem có đúng là = 'Đơn hàng' ?
-                //                    // nếu đều đúng hết thì lưu vào bảng notification với username hiện tại ( mục đích của bảng này là để khi user đăng nhập xem có quyền nhập thông báo ko? -- Quản trị đơn hàng )
-                //                    Optional<ActionSystem> optionalActionSystem = actionSystemRepository.findById("a8");
-                //                    if (!optionalActionSystem.isPresent()){
-                //                        throw new ErrorException("Không tìm thấy ActionSystem với id = a8 ");
-                //                    }
-                //                    ActionSystem actionSystem = optionalActionSystem.get();
-                //                    Integer functId = actionSystem.getFunctId();
-                //
-                //                    Optional<FunctionSystem> optionalFunctionSystem = functionSystemRepository.findById(functId);
-                //                    if (!optionalFunctionSystem.isPresent()){
-                //                        throw new ErrorException("Không tìm thấy FunctionSystem với id = "+functId);
-                //                    }
-                //                    FunctionSystem functionSystem = optionalFunctionSystem.get();
-                //                    if (!functionSystem.getName().equals("Đơn hàng")){
-                //                        throw new ErrorException("FunctionSystem với id = "+functId + " không phải là Đơn hàng");
-                //                    }
-                //
-                //                    //save vào bảng Notification
-                //
-                //
-                //
-                //                }
-
+            if (username != "hungdx" && (x.equals("1") || x.equals("a1"))) {
+                throw new ErrorException("Chức năng  Người Dùng chỉ có người quản trị cao nhất được phép!");
             }
+
+            if (
+                username != "hungdx" &&
+                (x.equals("1") || x.equals("a1") || x.equals("2") || x.equals("a2") || x.equals("a3") || x.equals("a12"))
+            ) {
+                throw new ErrorException("Chức năng Vai trò chỉ có người quản trị cao nhất được phép!");
+            }
+
+            //            if (!MethodCommon.isNumeric(x)) { // check xem có phải là số hay là chữ
+            //                UserPermission userPermissionParam = new UserPermission();
+            //                userPermissionParam.setUsername(username);
+            //                userPermissionParam.setActionId(x);
+            //
+            //                userPermissionParam.setCreatedBy("api");
+            //                userPermissionParam.setCreatedDate(LocalDateTime.now());
+            //                userPermissionParam.setLastModifiedDate(LocalDateTime.now());
+            //
+            //                listParamAdd.add(userPermissionParam);
+            //            }
+            UserPermission userPermissionParam = new UserPermission();
+            userPermissionParam.setUsername(username);
+            userPermissionParam.setActionId(x);
+
+            userPermissionParam.setCreatedBy("api");
+            userPermissionParam.setCreatedDate(LocalDateTime.now());
+            userPermissionParam.setLastModifiedDate(LocalDateTime.now());
+
+            listParamAdd.add(userPermissionParam);
         }
 
-        List<UserPermission> listReturn = userPermissionRepository.saveAll(listParam);
+        //Thêm phẩn tử mới
+        List<UserPermission> listReturn = userPermissionRepository.saveAll(listParamAdd); // lưu vào bảng user_permission
+
+        //Loại bỏ phần tử
+
         if (listReturn.size() > 0) {
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> map = createPermissionRequestModel.getCurrentPermission();
@@ -229,7 +236,7 @@ public class PermissionController {
                 permissionCurrentParam.setUsername(username);
                 permissionCurrentParam.setCurrentPer(jsonObjectMapper);
                 permissionCurrentParam.setLastModifiedDate(LocalDateTime.now());
-            } else { //TH đã có quyền  rồi thì là ADD
+            } else { //TH chưa có quyền  rồi thì là ADD
                 permissionCurrentParam = new PermissionCurrent();
 
                 permissionCurrentParam.setUsername(username);

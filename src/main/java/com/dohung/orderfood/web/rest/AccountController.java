@@ -174,7 +174,7 @@ public class AccountController {
         String clientSecret = "c782ec20-4cdf-4797-bcb6-4d6b211962ef";
 
         try {
-            String verifyPassword = MethodCommon.verifyCurrentPassword(
+            ResponseEntity<String> verifyPassword = MethodCommon.verifyCurrentPassword(
                 clientId,
                 userChangePasswordRequestModel.getUsername(),
                 userChangePasswordRequestModel.getCurrentPassword(),

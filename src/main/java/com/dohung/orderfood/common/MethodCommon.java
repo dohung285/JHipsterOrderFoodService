@@ -1,6 +1,7 @@
 package com.dohung.orderfood.common;
 
 import com.dohung.orderfood.domain.Comment;
+import com.dohung.orderfood.exception.ErrorException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -44,7 +45,13 @@ public class MethodCommon {
         return accessToken;
     }
 
-    public static String verifyCurrentPassword(String clientId, String username, String password, String clientSecret, String accessToken) {
+    public static ResponseEntity<String> verifyCurrentPassword(
+        String clientId,
+        String username,
+        String password,
+        String clientSecret,
+        String accessToken
+    ) {
         //        String accessToken = MethodCommon.getAccessToken();
 
         MultiValueMap<String, Object> postParameters = new LinkedMultiValueMap<>();
@@ -61,9 +68,15 @@ public class MethodCommon {
 
         HttpEntity<MultiValueMap<String, Object>> r = new HttpEntity<>(postParameters, headers);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseMessage = restTemplate.exchange(url, HttpMethod.POST, r, String.class);
-
-        return String.valueOf(responseMessage.getStatusCodeValue());
+        try {
+            ResponseEntity<String> responseMessage = restTemplate.exchange(url, HttpMethod.POST, r, String.class);
+            //            return String.valueOf(responseMessage.getStatusCodeValue());
+            return responseMessage;
+        } catch (Exception e) {
+            System.out.println(e);
+            throw new ErrorException("Mật khẩu hiện tại không đúng");
+            //            throw new ErrorException(e.getMessage());
+        }
     }
 
     public static boolean isNumeric(final String str) {
