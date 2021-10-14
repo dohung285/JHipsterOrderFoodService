@@ -247,16 +247,22 @@ public class AccountController {
         JSONObject jsonObject = new JSONObject(answer);
 
         Optional<UserPermission> optionalUserPermission = userPermissionRepository.findByUsername(username);
-        if (!optionalUserPermission.isPresent()) {
-            throw new ErrorException("Không tìm thấy UserPermission với username: " + username);
+        //        if (!optionalUserPermission.isPresent()) {
+        //            throw new ErrorException("Không tìm thấy UserPermission với username: " + username);
+        //        }
+        //           userPermissionRepository.delete(optionalUserPermission.get());
+        if (optionalUserPermission.isPresent()) {
+            userPermissionRepository.delete(optionalUserPermission.get());
         }
-        userPermissionRepository.delete(optionalUserPermission.get());
 
         Optional<PermissionCurrent> optionalPermissionCurrent = permissionCurrentRepository.findByUsername(username);
-        if (!optionalPermissionCurrent.isPresent()) {
-            throw new ErrorException("Không tìm thấy PermissionCurrent với username: " + username);
+        //        if (!optionalPermissionCurrent.isPresent()) {
+        //            throw new ErrorException("Không tìm thấy PermissionCurrent với username: " + username);
+        //        }
+        //        permissionCurrentRepository.delete(optionalPermissionCurrent.get());
+        if (optionalPermissionCurrent.isPresent()) {
+            permissionCurrentRepository.delete(optionalPermissionCurrent.get());
         }
-        permissionCurrentRepository.delete(optionalPermissionCurrent.get());
 
         return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, jsonObject.get("statusCodeValue")), HttpStatus.OK);
         //        return new ResponseEntity(jsonObject.get("statusCodeValue"), HttpStatus.OK);

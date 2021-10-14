@@ -346,9 +346,10 @@ public class OrderController {
         request.setTitle("orderfood_system");
         request.setMessage("Đơn hàng mới có mã đơn là orderId: " + orderId);
         request.setTopic("a");
-        request.setToken(
-            "cT-UrDYHH97lXas8wG2i06:APA91bFpRw5LRgRAkg_so2kFuNW3q2cAXZ078nU9_cO6pqc3gARrN0kG8sVS4hTM2ZKXcxJumWKNbWMqGlQOBsjdB76CpTrOaQK00jv_sCkQSg9cCrdPDBUI-Mc0Pw89ljxwDbn2FWYz"
-        );
+        request.setToken(orderRequestModel.getFirebaseToken());
+        //        request.setToken(
+        //            "cT-UrDYHH97lXas8wG2i06:APA91bFpRw5LRgRAkg_so2kFuNW3q2cAXZ078nU9_cO6pqc3gARrN0kG8sVS4hTM2ZKXcxJumWKNbWMqGlQOBsjdB76CpTrOaQK00jv_sCkQSg9cCrdPDBUI-Mc0Pw89ljxwDbn2FWYz"
+        //        );
         try {
             pushNotificationService.sendPushNotification(request);
         } catch (Exception e) {

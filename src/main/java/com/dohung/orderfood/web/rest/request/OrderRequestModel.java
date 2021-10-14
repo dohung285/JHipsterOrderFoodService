@@ -18,6 +18,7 @@ public class OrderRequestModel {
     private Date dateOrder;
 
     private String note;
+    private String firebaseToken;
 
     List<ObjectOrderDetail> orderDetails;
 
@@ -25,6 +26,14 @@ public class OrderRequestModel {
 
     public List<ObjectOrderDetail> getOrderDetails() {
         return orderDetails;
+    }
+
+    public String getFirebaseToken() {
+        return firebaseToken;
+    }
+
+    public void setFirebaseToken(String firebaseToken) {
+        this.firebaseToken = firebaseToken;
     }
 
     public void setOrderDetails(List<ObjectOrderDetail> orderDetails) {

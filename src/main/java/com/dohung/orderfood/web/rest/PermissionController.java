@@ -8,18 +8,17 @@ import com.dohung.orderfood.domain.FunctionSystem;
 import com.dohung.orderfood.domain.PermissionCurrent;
 import com.dohung.orderfood.domain.UserPermission;
 import com.dohung.orderfood.exception.ErrorException;
-import com.dohung.orderfood.repository.ActionSystemRepository;
-import com.dohung.orderfood.repository.FunctionSystemRepository;
-import com.dohung.orderfood.repository.PermissionCurrentRepository;
-import com.dohung.orderfood.repository.UserPermissionRepository;
+import com.dohung.orderfood.repository.*;
 import com.dohung.orderfood.web.rest.request.CreatePermissionRequestModel;
 import com.dohung.orderfood.web.rest.response.ObjectChildrenTree;
 import com.dohung.orderfood.web.rest.response.ObjectTreePer;
+import com.dohung.orderfood.web.rest.response.OrderIdResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.persistence.Tuple;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +42,26 @@ public class PermissionController {
 
     @Autowired
     private PermissionCurrentRepository permissionCurrentRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @GetMapping("/permission/check-order")
+    public ResponseEntity checkPermissionOrdered(@RequestParam String username, @RequestParam Integer foodId) {
+        List<Tuple> listResult = orderRepository.checkOrder(username, foodId);
+
+        List<Integer> listReturn = listResult
+            .stream()
+            .map(x -> x.get(0, Integer.class))
+            //            .map(x -> new OrderIdResponseDto())
+            .collect(Collectors.toList());
+
+        if (listReturn.size() <= 0) {
+            return new ResponseEntity(new ResponseData(StringConstant.iERROR_EXCEPTION, "fail"), HttpStatus.OK);
+        }
+
+        return new ResponseEntity(new ResponseData(StringConstant.iSUCCESS, "successful"), HttpStatus.OK);
+    }
 
     @GetMapping("/permission/check")
     public ResponseEntity checkPermission(@RequestParam String username, @RequestParam String pathName, @RequestParam String action) {
